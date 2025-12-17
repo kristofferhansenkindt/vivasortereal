@@ -1,15 +1,15 @@
 {
   "name": "viva-sorte",
   "version": "1.0.0",
-  "description": "Site Viva Sorte - Sorteios",
+  "description": "Site Viva Sorte com PIX e Painel Admin",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vercel dev",
     "start": "vercel dev",
     "deploy": "vercel --prod"
-  },
-  "engines": {
-    "node": ">=18"
   },
   "dependencies": {},
   "devDependencies": {}
