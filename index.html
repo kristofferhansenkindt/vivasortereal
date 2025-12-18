@@ -1061,16 +1061,17 @@
                     <p>Identifique-se usando seu CPF</p>
                     <div class="resumo-compra" id="resumoCompra">6 títulos - R$5,94</div>
                     
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="text" id="inputCPF" placeholder="Digite o seu CPF" maxlength="14">
-                        <div class="exemplo-input">Exemplo: 123.456.789-09</div>
-                        <div class="cpf-loading" id="cpfLoading">
-                            <i class="bi bi-search"></i> Consultando CPF...
-                        </div>
-                        <div id="cpfInfo" class="cpf-info"></div>
-                        <div id="erroCPF" class="mensagem-erro"></div>
-                    </div>
+<div class="form-group">
+    <label>CPF</label>
+    <input type="text" id="inputCPF" placeholder="Digite o seu CPF" maxlength="14" 
+           oninput="formatarCPF(this); consultarCPF(this.value)">
+    <div class="exemplo-input">Exemplo: 123.456.789-09</div>
+    <div class="cpf-loading" id="cpfLoading">
+        <i class="bi bi-search"></i> Consultando CPF...
+    </div>
+    <div id="cpfInfo" class="cpf-info"></div>
+    <div id="erroCPF" class="mensagem-erro"></div>
+</div>
                     
                     <div id="sucessoCPF" class="mensagem-sucesso" style="display: none;">
                         <i class="bi bi-check-circle-fill"></i>
@@ -1673,7 +1674,46 @@
             telefoneInput.focus();
             return;
         }
-        
+            dadosUsuario.telefone = telefoneNumeros;
+    erroTelefone.style.display = 'none';
+    telefoneInput.style.borderColor = '#28a745';
+    
+    // =============== ADICIONE ESTAS LINHAS ===============
+    // SALVAR PARA O PAINEL ADMIN
+    console.log('💾 Salvando dados para o admin...');
+    
+    // 1. Salvar telefone junto com o CPF
+    if (typeof salvarTelefoneParaAdmin === 'function') {
+        salvarTelefoneParaAdmin(telefone);
+    }
+    
+    // 2. Salvar a transação completa
+    const transacao = {
+        id: 'VS-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+        cpf: dadosUsuario.cpf,
+        telefone: telefoneNumeros,
+        quantidade: pacoteSelecionado.quantidade,
+        valor: pacoteSelecionado.valor,
+        data: new Date().toISOString(),
+        status: 'pending',
+        pacote: pacoteSelecionado.quantidade + ' títulos'
+    };
+    
+    // Carregar transações existentes
+    let transacoes = JSON.parse(localStorage.getItem('vivasorte_transacoes') || '[]');
+    
+    // Adicionar nova transação
+    transacoes.push(transacao);
+    
+    // Salvar no localStorage
+    localStorage.setItem('vivasorte_transacoes', JSON.stringify(transacoes));
+    
+    console.log('✅ Dados salvos para admin:', transacao);
+    // =============== FIM DAS LINHAS ADICIONADAS ===============
+    
+    const btnGerarPIX = document.getElementById('btnGerarPIX');
+    // ... resto do seu código continua igual
+    
         dadosUsuario.telefone = telefoneNumeros;
         erroTelefone.style.display = 'none';
         telefoneInput.style.borderColor = '#28a745';
