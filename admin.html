@@ -10,27 +10,31 @@
         :root {
             --primary: #00ff00;
             --secondary: #00cc00;
-            --success: #00ff00;
-            --danger: #ff3333;
-            --warning: #ffff00;
-            --dark: #000000;
-            --light: #111111;
+            --dark-bg: #0a0a0a;
+            --card-bg: #151515;
+            --text-color: #f0f0f0;
+            --border-color: #333;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
         }
         
         body {
-            background: #000000;
-            font-family: 'Courier New', monospace;
-            color: #00ff00;
+            background: var(--dark-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
         }
         
         .login-container {
             max-width: 400px;
             margin: 100px auto;
             padding: 30px;
-            background: #111111;
+            background: var(--card-bg);
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-            border: 1px solid #00ff00;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
         }
         
         .admin-container {
@@ -38,82 +42,83 @@
         }
         
         .navbar-admin {
-            background: #000000;
-            color: #00ff00;
+            background: var(--dark-bg);
+            color: var(--primary);
             padding: 15px 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
-            border: 1px solid #00ff00;
-            text-shadow: 0 0 5px #00ff00;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
         
         .card-admin {
-            background: #111111;
-            border-radius: 10px;
+            background: var(--card-bg);
+            border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
-            border: 1px solid #333333;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         
         .stat-card {
             text-align: center;
             padding: 25px 15px;
-            border-radius: 10px;
-            color: #000000;
+            border-radius: 8px;
+            color: white;
             margin-bottom: 20px;
-            border: 1px solid;
-            font-weight: bold;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
         
         .stat-card.total { 
-            background: linear-gradient(135deg, #00ff00, #009900);
-            border-color: #00ff00;
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
         }
         .stat-card.paid { 
-            background: linear-gradient(135deg, #00ff00, #006600);
-            border-color: #00ff00;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
         }
         .stat-card.pending { 
-            background: linear-gradient(135deg, #ffff00, #996600);
-            border-color: #ffff00;
-            color: #000;
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            color: #333;
         }
         .stat-card.canceled { 
-            background: linear-gradient(135deg, #ff3333, #990000);
-            border-color: #ff3333;
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
         }
         
         .table-responsive {
-            background: #111111;
-            border-radius: 10px;
+            background: var(--card-bg);
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
-            border: 1px solid #333333;
+            border: 1px solid var(--border-color);
         }
         
         .table {
-            color: #00ff00;
-            border-color: #333333;
+            color: var(--text-color);
+            margin-bottom: 0;
         }
         
         .table th {
-            background: #222222;
-            color: #00ff00;
-            border: none;
-            font-weight: bold;
-            border-bottom: 2px solid #00ff00;
+            background: #1a1a1a;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+            padding: 12px 15px;
         }
         
         .table td {
-            border-color: #333333;
-            background: #111111;
+            border-color: var(--border-color);
+            padding: 10px 15px;
+            vertical-align: middle;
         }
         
-        .table tr:hover td {
-            background: #1a1a1a;
-            color: #ffffff;
+        .table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
         }
         
         .badge-status {
@@ -121,54 +126,71 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            font-family: 'Courier New', monospace;
+            display: inline-block;
+            min-width: 80px;
+            text-align: center;
         }
         
         .badge-paid { 
-            background: rgba(0, 255, 0, 0.2); 
-            color: #00ff00; 
-            border: 1px solid #00ff00;
+            background: rgba(40, 167, 69, 0.2); 
+            color: #28a745; 
+            border: 1px solid #28a745;
         }
         .badge-pending { 
-            background: rgba(255, 255, 0, 0.2); 
-            color: #ffff00; 
-            border: 1px solid #ffff00;
+            background: rgba(255, 193, 7, 0.2); 
+            color: #ffc107; 
+            border: 1px solid #ffc107;
         }
         .badge-canceled { 
-            background: rgba(255, 51, 51, 0.2); 
-            color: #ff3333; 
-            border: 1px solid #ff3333;
+            background: rgba(220, 53, 69, 0.2); 
+            color: #dc3545; 
+            border: 1px solid #dc3545;
         }
         
         .btn-whatsapp {
             background: #25D366;
-            color: #000000;
+            color: white;
             border: none;
             padding: 5px 12px;
-            border-radius: 6px;
+            border-radius: 4px;
             font-size: 12px;
-            font-weight: bold;
+            transition: background 0.3s;
         }
         
         .btn-whatsapp:hover {
             background: #1da851;
-            color: #000000;
+            color: white;
         }
         
         .btn-copy-lead {
-            background: linear-gradient(135deg, #00ff00, #009900);
-            color: #000000;
+            background: #4a6fa5;
+            color: white;
             border: none;
             padding: 5px 12px;
-            border-radius: 6px;
+            border-radius: 4px;
             font-size: 12px;
-            font-weight: bold;
+            transition: background 0.3s;
             margin-right: 5px;
         }
         
         .btn-copy-lead:hover {
-            background: linear-gradient(135deg, #00cc00, #006600);
-            color: #000000;
+            background: #3a5a8a;
+            color: white;
+        }
+        
+        .btn-action {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            background: #555;
+            color: white;
         }
         
         .search-box {
@@ -179,23 +201,24 @@
         .search-box input {
             padding-left: 40px;
             border-radius: 6px;
-            border: 1px solid #00ff00;
-            background: #000000;
-            color: #00ff00;
+            border: 1px solid var(--border-color);
+            background: #1a1a1a;
+            color: var(--text-color);
         }
         
         .search-box input:focus {
-            border-color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            background: #111111;
-            color: #00ff00;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.2);
+            background: #1a1a1a;
+            color: var(--text-color);
         }
         
         .search-box i {
             position: absolute;
             left: 15px;
-            top: 12px;
-            color: #00ff00;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
         }
         
         .filters {
@@ -203,76 +226,80 @@
         }
         
         .filter-btn {
-            background: #222222;
-            border: 1px solid #333333;
+            background: #222;
+            border: 1px solid var(--border-color);
             padding: 8px 15px;
-            margin-right: 10px;
+            margin-right: 8px;
             border-radius: 6px;
             cursor: pointer;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            background: #333;
         }
         
         .filter-btn.active {
-            background: #00ff00;
-            color: #000000;
-            border-color: #00ff00;
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
             font-weight: bold;
         }
         
         .export-btn {
-            background: linear-gradient(135deg, #00ff00, #009900);
-            color: #000000;
+            background: #28a745;
+            color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 8px;
-            float: right;
-            font-weight: bold;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .export-btn:hover {
+            background: #218838;
+            color: white;
         }
         
         .refresh-btn {
-            background: linear-gradient(135deg, #00ff00, #009900);
-            color: #000000;
+            background: #17a2b8;
+            color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin-right: 10px;
-            font-weight: bold;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #138496;
+            color: white;
         }
         
         .logout-btn {
-            background: linear-gradient(135deg, #ff3333, #990000);
-            color: #ffffff;
+            background: #dc3545;
+            color: white;
             border: none;
             padding: 8px 15px;
             border-radius: 6px;
-            float: right;
-            font-weight: bold;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
+            color: white;
         }
         
         .real-time-badge {
-            background: #00ffff;
-            color: #000000;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 11px;
-            animation: pulse 2s infinite;
-            font-weight: bold;
-        }
-        
-        @keyframes pulse {
-            0% { 
-                opacity: 1; 
-                box-shadow: 0 0 5px #00ffff;
-            }
-            50% { 
-                opacity: 0.7; 
-                box-shadow: 0 0 15px #00ffff;
-            }
-            100% { 
-                opacity: 1; 
-                box-shadow: 0 0 5px #00ffff;
-            }
+            font-weight: 600;
         }
         
         .pagination {
@@ -281,115 +308,108 @@
         }
         
         .page-link {
-            background: #222222;
-            border: 1px solid #333333;
-            color: #00ff00;
+            background: #222;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
         }
         
         .page-link:hover {
-            background: #00ff00;
-            color: #000000;
-            border-color: #00ff00;
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
         }
         
         .page-item.active .page-link {
-            background: #00ff00;
-            color: #000000;
-            border-color: #00ff00;
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
             font-weight: bold;
         }
         
-        .modal-xl-custom {
-            max-width: 90%;
-        }
-        
         .modal-content {
-            background: #111111;
-            color: #00ff00;
-            border: 1px solid #00ff00;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
             border-radius: 10px;
         }
         
         .modal-header {
-            background: #000000;
-            border-bottom: 1px solid #00ff00;
+            background: #1a1a1a;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .modal-title {
-            color: #00ff00;
-            text-shadow: 0 0 5px #00ff00;
-        }
-        
-        .btn-close-white {
-            filter: invert(1) grayscale(100%) brightness(200%);
+            color: var(--primary);
         }
         
         .form-control {
-            background: #000000;
-            border: 1px solid #333333;
-            color: #00ff00;
+            background: #1a1a1a;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
         }
         
         .form-control:focus {
-            background: #111111;
-            border-color: #00ff00;
-            color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            background: #222;
+            border-color: var(--primary);
+            color: var(--text-color);
+            box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.2);
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #00ff00, #009900);
+            background: #007bff;
             border: none;
-            color: #000000;
-            font-weight: bold;
+            color: white;
+            font-weight: 600;
         }
         
         .btn-primary:hover {
-            background: linear-gradient(135deg, #00cc00, #006600);
-            color: #000000;
+            background: #0056b3;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            border: none;
+            color: #333;
+            font-weight: 600;
         }
         
         .btn-danger {
-            background: linear-gradient(135deg, #ff3333, #990000);
+            background: #dc3545;
             border: none;
-            color: #ffffff;
-            font-weight: bold;
+            color: white;
+            font-weight: 600;
         }
         
         .btn-outline-primary {
-            border: 1px solid #00ff00;
-            color: #00ff00;
+            border: 1px solid #007bff;
+            color: #007bff;
             background: transparent;
         }
         
         .btn-outline-primary:hover {
-            background: #00ff00;
-            color: #000000;
-        }
-        
-        .alert {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #00ff00;
-            color: #00ff00;
-        }
-        
-        .alert-info {
-            background: rgba(0, 255, 255, 0.1);
-            border: 1px solid #00ffff;
-            color: #00ffff;
+            background: #007bff;
+            color: white;
         }
         
         .lead-copied-popup {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #00ff00;
-            color: #000000;
+            background: #28a745;
+            color: white;
             padding: 15px 20px;
             border-radius: 8px;
             z-index: 99999;
             font-weight: bold;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             display: none;
             animation: slideIn 0.3s ease;
         }
@@ -407,137 +427,127 @@
         
         .terminal-text {
             font-family: 'Courier New', monospace;
-            color: #00ff00;
-            text-shadow: 0 0 5px #00ff00;
         }
         
-        .glowing-text {
-            animation: glow 1.5s ease-in-out infinite alternate;
+        .text-success {
+            color: #28a745 !important;
         }
         
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
-            }
-            to {
-                text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
-            }
+        .text-warning {
+            color: #ffc107 !important;
         }
         
-        .hacker-border {
-            position: relative;
-            overflow: hidden;
+        .text-danger {
+            color: #dc3545 !important;
         }
         
-        .hacker-border::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #00ff00, transparent);
-            animation: scanline 3s linear infinite;
+        .text-info {
+            color: #17a2b8 !important;
         }
         
-        @keyframes scanline {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
         }
         
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.1;
-            pointer-events: none;
-        }
+        .status-paid { background: #28a745; }
+        .status-pending { background: #ffc107; }
+        .status-canceled { background: #dc3545; }
         
         @media (max-width: 768px) {
             .navbar-admin h4 {
                 font-size: 18px;
+                margin-bottom: 10px;
+            }
+            
+            .navbar-admin > div {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .navbar-admin .btn-group {
+                margin-top: 10px;
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
             }
             
             .stat-card h2 {
                 font-size: 20px;
             }
             
-            .btn-copy-lead, .btn-whatsapp {
+            .btn-copy-lead, .btn-whatsapp, .btn-action {
                 padding: 4px 8px;
                 font-size: 10px;
+                margin-bottom: 5px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- EFEITO MATRIZ DE FUNDO -->
-    <div class="matrix-bg" id="matrixBg"></div>
-    
     <!-- POPUP DE LEAD COPIADO -->
     <div class="lead-copied-popup" id="leadCopiedPopup">
-        <i class="bi bi-clipboard-check"></i> Lead copiado para área de transferência!
+        <i class="bi bi-clipboard-check"></i> Informações do lead copiadas!
     </div>
     
     <!-- TELA DE LOGIN -->
     <div id="loginScreen" class="login-container">
         <div class="text-center mb-4">
-            <div class="terminal-text glowing-text" style="font-size: 24px; margin-bottom: 10px;">
-                <i class="bi bi-terminal-fill"></i> ADMIN PANEL
-            </div>
-            <h3 class="terminal-text" style="color: #00ff00;">VIVA SORTE</h3>
-            <p class="text-muted" style="color: #666;">Acesso restrito - Sistema 2025</p>
+            <h3 class="mb-3" style="color: var(--primary);">
+                <i class="bi bi-shield-lock"></i> ADMIN VIVA SORTE
+            </h3>
+            <p class="text-muted">Acesso restrito ao painel administrativo</p>
         </div>
         
         <div class="form-group mb-3">
-            <label class="terminal-text">USUÁRIO</label>
-            <input type="text" id="loginUser" class="form-control terminal-text" placeholder="root" value="admin">
+            <label>Usuário</label>
+            <input type="text" id="loginUser" class="form-control" placeholder="Usuário" value="admin">
         </div>
         
         <div class="form-group mb-4">
-            <label class="terminal-text">SENHA</label>
-            <input type="password" id="loginPass" class="form-control terminal-text" placeholder="********" value="viva2025">
+            <label>Senha</label>
+            <input type="password" id="loginPass" class="form-control" placeholder="Senha" value="viva2025">
         </div>
         
-        <button class="btn btn-primary w-100 terminal-text" onclick="login()">
-            <i class="bi bi-terminal"></i> ACESSAR SISTEMA
+        <button class="btn btn-primary w-100" onclick="login()">
+            <i class="bi bi-box-arrow-in-right"></i> Acessar Sistema
         </button>
         
-        <div id="loginError" class="alert alert-danger mt-3 terminal-text" style="display: none;">
+        <div id="loginError" class="alert alert-danger mt-3" style="display: none;">
             <i class="bi bi-exclamation-triangle"></i> Credenciais inválidas!
         </div>
         
         <div class="text-center mt-3">
-            <small class="terminal-text" style="color: #666;">root@vivasorte:~# admin:viva2025</small>
+            <small class="text-muted">© Viva Sorte 2025</small>
         </div>
     </div>
     
     <!-- PAINEL ADMIN (aparece após login) -->
     <div id="adminPanel" class="admin-container" style="display: none;">
         <!-- NAVBAR -->
-        <div class="navbar-admin hacker-border">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="terminal-text glowing-text">
-                        <i class="bi bi-shield-lock"></i> VIVA SORTE - PAINEL ADMIN
-                    </h4>
-                    <span class="real-time-badge terminal-text">
-                        <i class="bi bi-lightning-charge"></i> LIVE SYSTEM
-                    </span>
-                </div>
-                <div>
-                    <button class="refresh-btn terminal-text" onclick="carregarDados()">
-                        <i class="bi bi-arrow-clockwise"></i> ATUALIZAR
-                    </button>
-                    <button class="export-btn terminal-text" onclick="exportarExcel()">
-                        <i class="bi bi-download"></i> EXPORTAR
-                    </button>
-                    <button class="logout-btn terminal-text" onclick="logout()">
-                        <i class="bi bi-power"></i> SAIR
-                    </button>
-                </div>
+        <div class="navbar-admin">
+            <div>
+                <h4>
+                    <i class="bi bi-shield-lock"></i> Painel Admin - Viva Sorte
+                </h4>
+                <span class="real-time-badge">
+                    <i class="bi bi-lightning-charge"></i> Sistema Online
+                </span>
+            </div>
+            <div class="btn-group">
+                <button class="refresh-btn" onclick="carregarDados()">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar
+                </button>
+                <button class="export-btn" onclick="exportarExcel()">
+                    <i class="bi bi-download"></i> Exportar
+                </button>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="bi bi-power"></i> Sair
+                </button>
             </div>
         </div>
         
@@ -546,25 +556,25 @@
             <div class="col-md-3">
                 <div class="stat-card total">
                     <h2 id="totalTransacoes">0</h2>
-                    <p class="terminal-text">TOTAL LEADS</p>
+                    <p>Total de Leads</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card paid">
                     <h2 id="totalPago">R$ 0,00</h2>
-                    <p class="terminal-text">RECEITA TOTAL</p>
+                    <p>Receita Total</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card pending">
                     <h2 id="pendentes">0</h2>
-                    <p class="terminal-text">PENDENTES</p>
+                    <p>Pendentes</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card canceled">
                     <h2 id="cancelados">0</h2>
-                    <p class="terminal-text">CANCELADOS</p>
+                    <p>Cancelados</p>
                 </div>
             </div>
         </div>
@@ -574,58 +584,57 @@
             <div class="row">
                 <div class="col-md-8">
                     <div class="search-box">
-                        <i class="bi bi-search terminal-text"></i>
-                        <input type="text" id="searchInput" class="form-control terminal-text" 
-                               placeholder="BUSCAR: NOME, CPF, TELEFONE..." 
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="searchInput" class="form-control" 
+                               placeholder="Buscar por nome, CPF, telefone..." 
                                onkeyup="filtrarTabela()">
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <select id="statusFilter" class="form-control terminal-text" onchange="filtrarTabela()">
-                        <option value="all">TODOS STATUS</option>
-                        <option value="pago">PAGOS</option>
-                        <option value="pending">PENDENTES</option>
-                        <option value="canceled">CANCELADOS</option>
+                    <select id="statusFilter" class="form-control" onchange="filtrarTabela()">
+                        <option value="all">Todos os Status</option>
+                        <option value="pago">Pagos</option>
+                        <option value="pending">Pendentes</option>
+                        <option value="canceled">Cancelados</option>
                     </select>
                 </div>
             </div>
             
             <div class="filters mt-3">
-                <span class="filter-btn terminal-text active" onclick="filtrarPorData('today')" id="filterToday">HOJE</span>
-                <span class="filter-btn terminal-text" onclick="filtrarPorData('week')" id="filterWeek">SEMANA</span>
-                <span class="filter-btn terminal-text" onclick="filtrarPorData('month')" id="filterMonth">MÊS</span>
-                <span class="filter-btn terminal-text" onclick="filtrarPorData('all')" id="filterAll">TUDO</span>
+                <span class="filter-btn active" onclick="filtrarPorData('today')" id="filterToday">Hoje</span>
+                <span class="filter-btn" onclick="filtrarPorData('week')" id="filterWeek">Semana</span>
+                <span class="filter-btn" onclick="filtrarPorData('month')" id="filterMonth">Mês</span>
+                <span class="filter-btn" onclick="filtrarPorData('all')" id="filterAll">Todos</span>
             </div>
         </div>
         
         <!-- TABELA DE LEADS -->
         <div class="card-admin">
-            <h5 class="terminal-text glowing-text">
-                <i class="bi bi-table"></i> LEADS CAPTURADOS - 
-                <span id="totalRegistros" class="text-warning">0</span> REGISTROS
+            <h5 class="mb-3">
+                <i class="bi bi-table"></i> Leads Capturados
+                <span class="badge bg-secondary" id="totalRegistros">0</span>
             </h5>
             <div class="table-responsive">
                 <table class="table table-hover" id="transactionsTable">
                     <thead>
-                        <tr class="terminal-text">
+                        <tr>
                             <th>ID</th>
-                            <th>DATA</th>
-                            <th>NOME REAL</th>
-                            <th>IDADE</th>
+                            <th>Data</th>
+                            <th>Nome Completo</th>
+                            <th>Idade</th>
                             <th>CPF</th>
-                            <th>WHATSAPP</th>
-                            <th>VALOR</th>
-                            <th>STATUS</th>
-                            <th>AÇÕES</th>
+                            <th>WhatsApp</th>
+                            <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="transactionsBody" class="terminal-text">
+                    <tbody id="transactionsBody">
                         <tr id="loadingRow">
-                            <td colspan="9" class="text-center">
+                            <td colspan="8" class="text-center py-4">
                                 <div class="spinner-border text-success" role="status">
                                     <span class="visually-hidden">Carregando...</span>
                                 </div>
-                                <p class="mt-2 terminal-text">CARREGANDO DADOS DO SISTEMA...</p>
+                                <p class="mt-2">Carregando dados...</p>
                             </td>
                         </tr>
                     </tbody>
@@ -633,10 +642,10 @@
             </div>
             
             <!-- PAGINAÇÃO -->
-            <div class="d-flex justify-content-between align-items-center mt-3 terminal-text">
+            <div class="d-flex justify-content-between align-items-center mt-3">
                 <div>
-                    EXIBINDO <span id="showingCount" class="text-warning">0</span> DE 
-                    <span id="totalCount" class="text-warning">0</span> LEADS
+                    Exibindo <span id="showingCount" class="text-info">0</span> de 
+                    <span id="totalCount" class="text-info">0</span> leads
                 </div>
                 <nav>
                     <ul class="pagination" id="pagination">
@@ -649,15 +658,15 @@
     
     <!-- MODAL DETALHES -->
     <div class="modal fade" id="detalhesModal" tabindex="-1">
-        <div class="modal-dialog modal-xl-custom">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-dark text-success">
-                    <h5 class="modal-title terminal-text">
-                        <i class="bi bi-person-badge"></i> DETALHES COMPLETOS DO LEAD
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-badge"></i> Detalhes do Lead
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body terminal-text" id="detalhesConteudo">
+                <div class="modal-body" id="detalhesConteudo">
                     <!-- Conteúdo carregado dinamicamente -->
                 </div>
             </div>
@@ -673,63 +682,7 @@
     
     let allTransactions = [];
     let clientesComDados = {};
-    
-    // =========================================================================
-    // EFEITO MATRIZ DE FUNDO
-    // =========================================================================
-    function iniciarEfeitoMatrix() {
-        const canvas = document.createElement('canvas');
-        canvas.id = 'matrixCanvas';
-        canvas.style.position = 'fixed';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        canvas.style.zIndex = '-1';
-        canvas.style.opacity = '0.1';
-        canvas.style.pointerEvents = 'none';
-        document.getElementById('matrixBg').appendChild(canvas);
-        
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&';
-        const charArray = characters.split('');
-        const drops = [];
-        const fontSize = 14;
-        const columns = Math.floor(canvas.width / fontSize);
-        
-        for (let i = 0; i < columns; i++) {
-            drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
-        }
-        
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#00ff00';
-            ctx.font = `${fontSize}px monospace`;
-            
-            for (let i = 0; i < drops.length; i++) {
-                const text = charArray[Math.floor(Math.random() * charArray.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                
-                drops[i]++;
-            }
-        }
-        
-        setInterval(drawMatrix, 35);
-        
-        window.addEventListener('resize', function() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    }
+    let currentFilteredData = [];
     
     // =========================================================================
     // FUNÇÃO DE LOGIN
@@ -742,10 +695,7 @@
         if (user === ADMIN_USER && pass === ADMIN_PASS) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            
-            // Iniciar efeito matrix após login
-            iniciarEfeitoMatrix();
-            
+            sessionStorage.setItem('admin_logged_in', 'true');
             carregarDados();
         } else {
             errorDiv.style.display = 'block';
@@ -755,11 +705,12 @@
     }
     
     function logout() {
-        if (confirm('Sair do sistema?')) {
+        if (confirm('Deseja sair do sistema?')) {
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'block';
             document.getElementById('loginPass').value = '';
             document.getElementById('loginError').style.display = 'none';
+            sessionStorage.removeItem('admin_logged_in');
         }
     }
     
@@ -784,7 +735,8 @@
             );
             
             atualizarEstatisticas();
-            renderizarTabela(allTransactions);
+            currentFilteredData = [...allTransactions];
+            renderizarTabela(currentFilteredData);
             
             loadingRow.style.display = 'none';
             
@@ -809,7 +761,7 @@
     }
     
     // =========================================================================
-    // RENDERIZAR TABELA COM BOTÃO DE COPIAR LEAD
+    // RENDERIZAR TABELA
     // =========================================================================
     function renderizarTabela(transacoes, page = 1, pageSize = 10) {
         const tbody = document.getElementById('transactionsBody');
@@ -818,8 +770,8 @@
         if (transacoes.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4 terminal-text">
-                        <i class="bi bi-inbox"></i> NENHUM LEAD ENCONTRADO
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox"></i> Nenhum lead encontrado
                     </td>
                 </tr>
             `;
@@ -842,44 +794,46 @@
             
             // Buscar dados completos do cliente
             const clienteData = clientesComDados[transacao.cpf] || {};
-            const nomeReal = clienteData.nome || transacao.nome || 'NÃO IDENTIFICADO';
+            const nomeReal = clienteData.nome || transacao.nome || 'Não identificado';
             const idade = clienteData.idade || transacao.idade || '';
-            const nascimento = clienteData.nascimento || transacao.nascimento || '';
             
             // Determinar status
             let statusClass = 'badge-pending';
             let statusText = 'PENDENTE';
+            let statusIcon = 'bi-clock';
             
             if (transacao.status === 'pago' || transacao.status === 'paid') {
                 statusClass = 'badge-paid';
                 statusText = 'PAGO';
+                statusIcon = 'bi-check-circle';
             } else if (transacao.status === 'canceled' || transacao.status === 'expired' || transacao.status === 'failed') {
                 statusClass = 'badge-canceled';
                 statusText = 'CANCELADO';
+                statusIcon = 'bi-x-circle';
             }
             
             const row = `
                 <tr>
-                    <td><small class="terminal-text">${transacao.id || 'N/A'}</small></td>
-                    <td><small class="terminal-text">${formatarData(transacao.data)}</small></td>
-                    <td><strong class="terminal-text">${nomeReal.toUpperCase()}</strong></td>
-                    <td class="terminal-text">${idade ? idade + ' anos' : 'N/A'}</td>
-                    <td><code class="terminal-text">${cpfFormatado}</code></td>
-                    <td class="terminal-text">${telefone}</td>
-                    <td><strong class="terminal-text">R$ ${(transacao.valor || 0).toFixed(2).replace('.', ',')}</strong></td>
-                    <td><span class="badge-status ${statusClass} terminal-text">${statusText}</span></td>
+                    <td><small>${transacao.id?.substring(0, 8) || 'N/A'}</small></td>
+                    <td><small>${formatarData(transacao.data)}</small></td>
+                    <td><strong>${nomeReal}</strong></td>
+                    <td>${idade ? idade + ' anos' : 'N/A'}</td>
+                    <td><code>${cpfFormatado}</code></td>
+                    <td>${telefone}</td>
                     <td>
-                        <button class="btn-copy-lead terminal-text" onclick="copiarLead('${transacao.id}')" title="Copiar Lead">
-                            <i class="bi bi-clipboard"></i>
+                        <span class="badge-status ${statusClass}">
+                            <i class="bi ${statusIcon}"></i> ${statusText}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-copy-lead" onclick="copiarLead('${transacao.id}')" title="Copiar informações básicas">
+                            <i class="bi bi-clipboard"></i> Copiar
                         </button>
                         ${telefone.replace(/\D/g, '').length >= 10 ? 
-                            `<button class="btn-whatsapp" onclick="abrirWhatsApp('${telefone.replace(/\D/g, '')}')" title="WhatsApp">
+                            `<button class="btn-whatsapp" onclick="abrirWhatsApp('${telefone.replace(/\D/g, '')}')" title="Abrir WhatsApp">
                                 <i class="bi bi-whatsapp"></i>
                             </button>` : 
-                            '<small class="text-muted terminal-text">N/A</small>'}
-                        <button class="btn btn-sm btn-outline-primary terminal-text" onclick="verDetalhes('${transacao.id}')" title="Ver Detalhes">
-                            <i class="bi bi-eye"></i>
-                        </button>
+                            '<small class="text-muted">N/A</small>'}
                     </td>
                 </tr>
             `;
@@ -897,7 +851,7 @@
     }
     
     // =========================================================================
-    // FUNÇÃO PARA COPIAR LEAD COMPLETO (1 CLIQUE)
+    // FUNÇÃO PARA COPIAR LEAD (APENAS NOME, CPF, IDADE, WHATSAPP)
     // =========================================================================
     function copiarLead(transacaoId) {
         const transacao = allTransactions.find(t => t.id === transacaoId);
@@ -905,30 +859,12 @@
         
         const clienteData = clientesComDados[transacao.cpf] || {};
         
-        // Formatar dados do lead
+        // Apenas nome, CPF, idade e WhatsApp conforme solicitado
         const leadText = `
-LEAD VIVA SORTE - ${formatarData(transacao.data)}
-
-📋 DADOS PESSOAIS:
-Nome: ${clienteData.nome || transacao.nome || 'NÃO IDENTIFICADO'}
-Idade: ${clienteData.idade || transacao.idade || 'N/A'} anos
+Nome: ${clienteData.nome || transacao.nome || 'Não identificado'}
 CPF: ${transacao.cpf ? transacao.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'N/A'}
-Nascimento: ${clienteData.nascimento || transacao.nascimento || 'N/A'}
-Mãe: ${clienteData.mae || 'N/A'}
-
-📱 CONTATO:
+Idade: ${clienteData.idade || transacao.idade || 'N/A'}
 WhatsApp: ${transacao.telefone_formatado || transacao.telefone || 'N/A'}
-
-💰 TRANSAÇÃO:
-ID: ${transacao.id}
-Valor: R$ ${(transacao.valor || 0).toFixed(2)}
-Quantidade: ${transacao.quantidade || 0} títulos
-Status: ${transacao.status === 'pago' ? 'PAGO' : transacao.status === 'pending' ? 'PENDENTE' : 'CANCELADO'}
-Data: ${formatarData(transacao.data)}
-
-📊 ORIGEM:
-Sistema: Viva Sorte
-Data Captura: ${formatarData(transacao.data)}
         `.trim();
         
         // Copiar para área de transferência
@@ -940,35 +876,50 @@ Data Captura: ${formatarData(transacao.data)}
                 
                 // Efeito visual no botão
                 const btn = event.target.closest('.btn-copy-lead');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i class="bi bi-check2"></i>';
-                btn.style.background = 'linear-gradient(135deg, #00ffff, #0099cc)';
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
+                btn.style.background = '#28a745';
                 
                 setTimeout(() => {
                     popup.style.display = 'none';
-                    btn.innerHTML = originalHTML;
-                    btn.style.background = 'linear-gradient(135deg, #00ff00, #009900)';
-                }, 3000);
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#4a6fa5';
+                }, 2000);
             })
             .catch(err => {
                 console.error('Erro ao copiar:', err);
-                alert('Erro ao copiar lead. Use Ctrl+C manualmente.');
+                // Fallback para navegadores mais antigos
+                const textArea = document.createElement('textarea');
+                textArea.value = leadText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    const popup = document.getElementById('leadCopiedPopup');
+                    popup.style.display = 'block';
+                    setTimeout(() => {
+                        popup.style.display = 'none';
+                    }, 2000);
+                } catch (e) {
+                    alert('Copie manualmente: Ctrl+C');
+                }
+                document.body.removeChild(textArea);
             });
     }
     
     // =========================================================================
-    // FUNÇÃO PARA FORMATAR DATA
+    // FUNÇÕES AUXILIARES
     // =========================================================================
     function formatarData(dataString) {
         if (!dataString) return '';
-        
-        const data = new Date(dataString);
-        return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR').substring(0, 5);
+        try {
+            const data = new Date(dataString);
+            return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR').substring(0, 5);
+        } catch (e) {
+            return dataString;
+        }
     }
     
-    // =========================================================================
-    // FUNÇÃO PARA ABRIR WHATSAPP
-    // =========================================================================
     function abrirWhatsApp(telefone) {
         if (!telefone || telefone.length < 10) return;
         
@@ -978,186 +929,37 @@ Data Captura: ${formatarData(transacao.data)}
         window.open(url, '_blank');
     }
     
-    // =========================================================================
-    // FUNÇÃO PARA VER DETALHES
-    // =========================================================================
-    function verDetalhes(transacaoId) {
-        const transacao = allTransactions.find(t => t.id === transacaoId);
-        if (!transacao) return;
-        
-        const clienteData = clientesComDados[transacao.cpf] || {};
-        const telefoneFormatado = transacao.telefone_formatado || transacao.telefone || '';
-        
-        const conteudo = `
-            <div class="row">
-                <div class="col-md-6">
-                    <h5 class="terminal-text text-success">
-                        <i class="bi bi-person-badge"></i> DADOS PESSOAIS
-                    </h5>
-                    <table class="table table-bordered terminal-text">
-                        <tr>
-                            <th width="40%">NOME COMPLETO:</th>
-                            <td class="text-warning">${clienteData.nome || transacao.nome || 'NÃO IDENTIFICADO'}</td>
-                        </tr>
-                        <tr>
-                            <th>IDADE:</th>
-                            <td>${clienteData.idade || transacao.idade || 'N/A'} anos</td>
-                        </tr>
-                        <tr>
-                            <th>DATA NASCIMENTO:</th>
-                            <td>${clienteData.nascimento || transacao.nascimento || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <th>NOME DA MÃE:</th>
-                            <td>${clienteData.mae || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <th>CPF:</th>
-                            <td><code>${transacao.cpf ? transacao.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'N/A'}</code></td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <div class="col-md-6">
-                    <h5 class="terminal-text text-success">
-                        <i class="bi bi-cash-coin"></i> DADOS DA TRANSAÇÃO
-                    </h5>
-                    <table class="table table-bordered terminal-text">
-                        <tr>
-                            <th width="40%">ID:</th>
-                            <td><code>${transacao.id || 'N/A'}</code></td>
-                        </tr>
-                        <tr>
-                            <th>DATA:</th>
-                            <td>${formatarData(transacao.data)}</td>
-                        </tr>
-                        <tr>
-                            <th>WHATSAPP:</th>
-                            <td class="text-info">${telefoneFormatado}</td>
-                        </tr>
-                        <tr>
-                            <th>QUANTIDADE:</th>
-                            <td>${transacao.quantidade || 0} títulos</td>
-                        </tr>
-                        <tr>
-                            <th>VALOR:</th>
-                            <td class="text-warning"><strong>R$ ${(transacao.valor || 0).toFixed(2).replace('.', ',')}</strong></td>
-                        </tr>
-                        <tr>
-                            <th>STATUS:</th>
-                            <td>
-                                <span class="badge-status ${transacao.status === 'pago' ? 'badge-paid' : 
-                                    transacao.status === 'canceled' ? 'badge-canceled' : 'badge-pending'} terminal-text">
-                                    ${transacao.status === 'pago' ? 'PAGO' : 
-                                      transacao.status === 'canceled' ? 'CANCELADO' : 'PENDENTE'}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h5 class="terminal-text text-success">
-                        <i class="bi bi-tools"></i> AÇÕES RÁPIDAS
-                    </h5>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-success terminal-text" onclick="copiarLead('${transacao.id}')">
-                            <i class="bi bi-clipboard-check"></i> COPIAR LEAD COMPLETO
-                        </button>
-                        
-                        ${telefoneFormatado.replace(/\D/g, '').length >= 10 ? `
-                            <button class="btn btn-primary terminal-text" onclick="abrirWhatsApp('${telefoneFormatado.replace(/\D/g, '')}')">
-                                <i class="bi bi-whatsapp"></i> WHATSAPP DIRETO
-                            </button>
-                        ` : ''}
-                        
-                        <button class="btn btn-warning terminal-text" onclick="marcarComoPago('${transacao.id}')">
-                            <i class="bi bi-check-circle"></i> MARCAR COMO PAGO
-                        </button>
-                        
-                        <button class="btn btn-danger terminal-text" onclick="excluirTransacao('${transacao.id}')">
-                            <i class="bi bi-trash"></i> EXCLUIR LEAD
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            ${clienteData.consultado_em ? `
-                <div class="alert alert-info mt-3 terminal-text">
-                    <small>
-                        <i class="bi bi-info-circle"></i> 
-                        DADOS CONSULTADOS EM: ${formatarData(clienteData.consultado_em)}
-                    </small>
-                </div>
-            ` : ''}
-        `;
-        
-        document.getElementById('detalhesConteudo').innerHTML = conteudo;
-        
-        // Mostrar modal
-        const modal = new bootstrap.Modal(document.getElementById('detalhesModal'));
-        modal.show();
-    }
-    
-    // =========================================================================
-    // FUNÇÕES ADICIONAIS
-    // =========================================================================
-    function marcarComoPago(transacaoId) {
-        const transacaoIndex = allTransactions.findIndex(t => t.id === transacaoId);
-        if (transacaoIndex === -1) return;
-        
-        allTransactions[transacaoIndex].status = 'pago';
-        allTransactions[transacaoIndex].confirmado_em = new Date().toISOString();
-        
-        localStorage.setItem('vivasorte_transacoes', JSON.stringify(allTransactions));
-        
-        carregarDados();
-        
-        const modal = bootstrap.Modal.getInstance(document.getElementById('detalhesModal'));
-        modal.hide();
-        
-        alert('Lead marcado como pago!');
-    }
-    
-    function excluirTransacao(transacaoId) {
-        if (!confirm('EXCLUIR este lead permanentemente?')) return;
-        
-        allTransactions = allTransactions.filter(t => t.id !== transacaoId);
-        localStorage.setItem('vivasorte_transacoes', JSON.stringify(allTransactions));
-        
-        carregarDados();
-        
-        const modal = bootstrap.Modal.getInstance(document.getElementById('detalhesModal'));
-        modal.hide();
-        
-        alert('Lead excluído!');
-    }
-    
     function filtrarTabela() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const statusFilter = document.getElementById('statusFilter').value;
         
         let filtered = allTransactions;
         
+        // Filtrar por status
         if (statusFilter !== 'all') {
-            filtered = filtered.filter(t => 
-                t.status === statusFilter || 
-                (statusFilter === 'pago' && t.status === 'paid')
-            );
+            filtered = filtered.filter(t => {
+                if (statusFilter === 'pago') {
+                    return t.status === 'pago' || t.status === 'paid';
+                }
+                return t.status === statusFilter;
+            });
         }
         
+        // Filtrar por termo de busca
         if (searchTerm) {
-            filtered = filtered.filter(t => 
-                (t.cpf && t.cpf.includes(searchTerm.replace(/\D/g, ''))) ||
-                (t.telefone && t.telefone.includes(searchTerm.replace(/\D/g, ''))) ||
-                (t.telefone_formatado && t.telefone_formatado.toLowerCase().includes(searchTerm)) ||
-                (t.nome && t.nome.toLowerCase().includes(searchTerm)) ||
-                (t.id && t.id.toLowerCase().includes(searchTerm))
-            );
+            filtered = filtered.filter(t => {
+                const clienteData = clientesComDados[t.cpf] || {};
+                const nome = (clienteData.nome || t.nome || '').toLowerCase();
+                const cpf = (t.cpf || '').toLowerCase();
+                const telefone = (t.telefone_formatado || t.telefone || '').toLowerCase();
+                
+                return nome.includes(searchTerm) || 
+                       cpf.includes(searchTerm.replace(/\D/g, '')) || 
+                       telefone.includes(searchTerm.replace(/\D/g, ''));
+            });
         }
         
+        currentFilteredData = filtered;
         renderizarTabela(filtered);
     }
     
@@ -1184,14 +986,20 @@ Data Captura: ${formatarData(transacao.data)}
         
         if (dataInicio) {
             filtered = filtered.filter(t => {
-                const dataTransacao = new Date(t.data);
-                return dataTransacao >= dataInicio;
+                try {
+                    const dataTransacao = new Date(t.data);
+                    return dataTransacao >= dataInicio;
+                } catch (e) {
+                    return false;
+                }
             });
         }
         
+        // Atualizar botões ativos
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('filter' + periodo.charAt(0).toUpperCase() + periodo.slice(1)).classList.add('active');
+        document.getElementById(`filter${periodo.charAt(0).toUpperCase() + periodo.slice(1)}`).classList.add('active');
         
+        currentFilteredData = filtered;
         renderizarTabela(filtered);
     }
     
@@ -1205,21 +1013,27 @@ Data Captura: ${formatarData(transacao.data)}
         const prevLi = document.createElement('li');
         prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
         prevLi.innerHTML = `
-            <a class="page-link terminal-text" href="#" onclick="mudarPagina(${currentPage - 1})">
+            <a class="page-link" href="#" onclick="mudarPagina(${currentPage - 1})">
                 <i class="bi bi-chevron-left"></i>
             </a>
         `;
         pagination.appendChild(prevLi);
         
         // Números das páginas
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+        const maxPagesToShow = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = startPage + maxPagesToShow - 1;
+        
+        if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
         
         for (let i = startPage; i <= endPage; i++) {
             const pageLi = document.createElement('li');
             pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
             pageLi.innerHTML = `
-                <a class="page-link terminal-text" href="#" onclick="mudarPagina(${i})">${i}</a>
+                <a class="page-link" href="#" onclick="mudarPagina(${i})">${i}</a>
             `;
             pagination.appendChild(pageLi);
         }
@@ -1228,7 +1042,7 @@ Data Captura: ${formatarData(transacao.data)}
         const nextLi = document.createElement('li');
         nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
         nextLi.innerHTML = `
-            <a class="page-link terminal-text" href="#" onclick="mudarPagina(${currentPage + 1})">
+            <a class="page-link" href="#" onclick="mudarPagina(${currentPage + 1})">
                 <i class="bi bi-chevron-right"></i>
             </a>
         `;
@@ -1236,7 +1050,7 @@ Data Captura: ${formatarData(transacao.data)}
     }
     
     function mudarPagina(page) {
-        renderizarTabela(allTransactions, page);
+        renderizarTabela(currentFilteredData, page);
     }
     
     function exportarExcel() {
@@ -1245,17 +1059,16 @@ Data Captura: ${formatarData(transacao.data)}
             return;
         }
         
-        let csv = 'ID,Data,Nome,Idade,Nascimento,Mae,CPF,WhatsApp,Quantidade,Valor,Status\n';
+        let csv = 'Nome,CPF,Idade,WhatsApp,Data,Status,Valor\n';
         
         allTransactions.forEach(t => {
             const cliente = clientesComDados[t.cpf] || {};
             const status = t.status === 'pago' ? 'Pago' : 
                           t.status === 'pending' ? 'Pendente' : 'Cancelado';
             
-            csv += `"${t.id || ''}","${formatarData(t.data)}","${cliente.nome || t.nome || ''}",`;
-            csv += `"${cliente.idade || ''}","${cliente.nascimento || ''}","${cliente.mae || ''}",`;
-            csv += `"${t.cpf || ''}","${t.telefone_formatado || t.telefone || ''}",`;
-            csv += `"${t.quantidade || 0}","${t.valor || 0}","${status}"\n`;
+            csv += `"${cliente.nome || t.nome || ''}","${t.cpf || ''}","${cliente.idade || ''}",`;
+            csv += `"${t.telefone_formatado || t.telefone || ''}","${formatarData(t.data)}",`;
+            csv += `"${status}","${t.valor || 0}"\n`;
         });
         
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1280,20 +1093,15 @@ Data Captura: ${formatarData(transacao.data)}
         if (loggedIn === 'true') {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            iniciarEfeitoMatrix();
             carregarDados();
         }
         
-        // Salvar login na sessão
-        window.login = function() {
-            const user = document.getElementById('loginUser').value;
-            const pass = document.getElementById('loginPass').value;
-            
-            if (user === ADMIN_USER && pass === ADMIN_PASS) {
-                sessionStorage.setItem('admin_logged_in', 'true');
+        // Permitir login com Enter
+        document.getElementById('loginPass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
                 login();
             }
-        };
+        });
     });
     </script>
 </body>
