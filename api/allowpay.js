@@ -1,11 +1,7 @@
-// api/allowpay.js - Versão para Vercel/Netlify
-const ALLOWPAY_API_KEY = "sk_live_NJJH7xyFl6IpBZ1vNiOPzmjxd5jmNF7VoXJOcuryYyrdXkMZ";
-const ALLOWPAY_API_URL = "https://api.allowpay.online/functions/v1/transactions";
-
+// api/allowpay.js
 export default async function handler(req, res) {
-    // Permitir CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
     if (req.method === 'OPTIONS') {
@@ -13,69 +9,46 @@ export default async function handler(req, res) {
     }
     
     try {
-        const input = req.body;
+        const ALLOWPAY_API_KEY = "sk_live_NJJH7xyFl6IpBZ1vNiOPzmjxd5jmNF7VoXJOcuryYyrdXkMZ";
+        const ALLOWPAY_API_URL = "https://api.allowpay.online/functions/v1";
         
-        // VALIDAÇÃO
-        const amount = parseFloat(input.amount) || 0;
-        const cpf = (input.cpf || '').replace(/\D/g, '');
-        const telefone = (input.telefone || '').replace(/\D/g, '');
-        const quantidade = parseInt(input.quantidade) || 0;
+        const { amount, cpf, telefone, quantidade, nome } = req.body;
         
-        if (amount <= 0 || cpf.length !== 11 || telefone.length < 10 || quantidade <= 0) {
+        if (!amount || !cpf) {
             return res.status(400).json({
                 success: false,
-                error: 'Dados inválidos ou incompletos'
+                error: 'Dados incompletos'
             });
         }
         
-        // CONVERTER VALOR
-        const valorCentavos = Math.round(amount * 100);
-        const transactionId = "VS-" + Date.now() + "-" + Math.random().toString(36).substr(2, 8);
-        
-        // PAYLOAD PARA ALLOW PAY
+        // DADOS PARA A ALLOWPAY
         const payload = {
-            'customer': {
-                'name': input.nome || "Cliente Viva Sorte",
-                'email': cpf.substring(0, 8) + "@vivasorte.temp.com",
-                'phone': telefone,
-                'document': {
-                    'type': "CPF",
-                    'number': cpf
-                }
+            amount: Math.round(amount * 100), // Em centavos
+            description: `Viva Sorte - ${quantidade || 6} títulos`,
+            currency: "BRL",
+            payment_method: "pix",
+            customer: {
+                name: nome || `Cliente ${cpf.substring(0, 3)}***`,
+                document: {
+                    type: "cpf",
+                    number: cpf
+                },
+                phone: telefone ? {
+                    country_code: "55",
+                    number: telefone.length === 11 ? telefone.substring(2) : telefone,
+                    area_code: telefone.substring(0, 2)
+                } : undefined
             },
-            'shipping': {
-                'address': {
-                    'street': "Não informado",
-                    'streetNumber': "S/N",
-                    'complement': "",
-                    'neighborhood': "Centro",
-                    'city': "São Paulo",
-                    'state': "SP",
-                    'zipCode': "01000000",
-                    'country': "BR"
-                }
-            },
-            'paymentMethod': "PIX",
-            'pix': {
-                'expiresInDays': 1
-            },
-            'items': [{
-                'title': "Viva Sorte - " + quantidade + " títulos de capitalização",
-                'quantity': 1,
-                'unitPrice': valorCentavos,
-                'externalRef': "VS-" + cpf.substring(0, 6)
-            }],
-            'amount': valorCentavos,
-            'description': "Viva Sorte - " + quantidade + " títulos",
-            'externalId': transactionId,
-            'postbackUrl': "https://" + req.headers.host + "/api/webhook"
+            metadata: {
+                quantidade: quantidade || 6,
+                origem: "vivasorte"
+            }
         };
         
-        // AUTENTICAÇÃO
+        // AUTENTICAÇÃO BASIC
         const auth = Buffer.from(ALLOWPAY_API_KEY + ":").toString('base64');
         
-        // CHAMADA PARA ALLOW PAY
-        const response = await fetch(ALLOWPAY_API_URL, {
+        const response = await fetch(ALLOWPAY_API_URL + "/transactions", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -85,37 +58,67 @@ export default async function handler(req, res) {
             body: JSON.stringify(payload)
         });
         
+        if (response.status !== 201 && response.status !== 200) {
+            const errorText = await response.text();
+            console.error('Erro AllowPay:', errorText);
+            
+            return res.status(200).json({
+                success: false,
+                error: 'Erro ao criar transação',
+                allowpay_error: errorText
+            });
+        }
+        
         const responseData = await response.json();
         
-        if (response.status !== 200) {
-            throw new Error("Erro na comunicação com Allow Pay (HTTP " + response.status + ")");
-        }
+        // SALVAR TRANSAÇÃO NO LOCALSTORAGE (via resposta)
+        const transacao = {
+            id: responseData.id,
+            cpf: cpf,
+            telefone: telefone,
+            quantidade: quantidade,
+            valor: amount,
+            data: new Date().toISOString(),
+            status: 'pending',
+            allowpay_data: responseData
+        };
         
-        // VERIFICAR QR CODE
-        const qrCode = responseData.pix?.qrcode || responseData.qr_code || '';
-        
-        if (!qrCode) {
-            throw new Error('QR Code PIX não gerado');
-        }
-        
-        // SUCESSO
+        // Retornar dados do PIX
         return res.status(200).json({
             success: true,
-            transaction_id: responseData.id || transactionId,
-            qr_code: qrCode,
-            qr_code_image: 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(qrCode),
-            codigo_pix: qrCode,
-            valor: amount,
-            quantidade: quantidade,
-            expira_em: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            transaction_id: responseData.id,
+            qr_code: responseData.pix?.qr_code || responseData.qr_code,
+            qr_code_image: responseData.pix?.qr_code_image || 
+                          `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(responseData.pix?.qr_code || responseData.qr_code)}`,
+            codigo_pix: responseData.pix?.brcode || responseData.pix?.qr_code,
+            expiration_date: responseData.pix?.expiration_date || new Date(Date.now() + 30 * 60000).toISOString(),
+            amount: amount,
+            transacao_salva: transacao
         });
         
     } catch (error) {
         console.error('Erro:', error);
         
-        return res.status(500).json({
+        // FALLBACK - Gerar PIX estático para desenvolvimento
+        if (process.env.NODE_ENV !== 'production') {
+            const transactionId = 'VS-' + Date.now() + '-TEST';
+            const qrCodeText = `00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-426614174000520400005303986540${req.body.amount.toFixed(2)}5802BR5909Viva Sorte6008Brasilia62070503***6304`;
+            
+            return res.status(200).json({
+                success: true,
+                transaction_id: transactionId,
+                qr_code: qrCodeText,
+                qr_code_image: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeText)}`,
+                codigo_pix: qrCodeText,
+                expiration_date: new Date(Date.now() + 30 * 60000).toISOString(),
+                amount: req.body.amount,
+                is_test: true
+            });
+        }
+        
+        return res.status(200).json({
             success: false,
-            error: error.message || 'Erro interno no servidor'
+            error: error.message
         });
     }
 }
